@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { 
@@ -21,10 +22,7 @@ const AdminCustomers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/users');
       setUsers(response.data);
     } catch (err) {
       toast.error('Failed to load customers');
@@ -36,10 +34,7 @@ const AdminCustomers = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to remove this user?')) return;
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/users/${id}`);
       toast.success('User removed');
       fetchUsers();
     } catch (err) {

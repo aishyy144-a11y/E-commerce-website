@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { 
@@ -24,10 +25,7 @@ const AdminNewsletter = () => {
   const fetchSubscribers = async () => {
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/newsletter/subscribers', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/newsletter/subscribers');
       setSubscribers(response.data);
     } catch (err) {
       toast.error('Failed to load subscribers');
@@ -48,12 +46,9 @@ const AdminNewsletter = () => {
 
     setSending(true);
     try {
-      const token = sessionStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/newsletter/send-bulk', {
+      const response = await api.post('/api/newsletter/send-bulk', {
         subject,
         message
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       toast.success(response.data.message);
       setSubject('');

@@ -9,6 +9,7 @@ import {
   HiOutlineChatAlt,
   HiOutlineCheckCircle
 } from 'react-icons/hi';
+import api from '../../utils/api';
 import axios from 'axios';
 
 const QuotationForm = ({ product, isOpen, onClose }) => {
@@ -34,7 +35,7 @@ const QuotationForm = ({ product, isOpen, onClose }) => {
     setError('');
     
     try {
-      await axios.post('http://localhost:5000/api/inquiries', {
+      await api.post('/api/inquiries', {
         ...formData,
         product: product._id
       });

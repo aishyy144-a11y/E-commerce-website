@@ -9,6 +9,7 @@ import {
   HiOutlineCube
 } from 'react-icons/hi';
 import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../../utils/api';
 import axios from 'axios';
 
 const SearchModal = ({ isOpen, onClose }) => {
@@ -27,7 +28,7 @@ const SearchModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/categories');
+        const response = await api.get('/api/categories');
         setCategories(response.data);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -50,7 +51,7 @@ const SearchModal = ({ isOpen, onClose }) => {
       setLoading(true);
       const timer = setTimeout(async () => {
         try {
-          const response = await axios.get(`http://localhost:5000/api/products/search?query=${query}`);
+          const response = await api.get(`/api/products/search?query=${query}`);
           setResults(response.data);
         } catch (err) {
           console.error('Search error:', err);

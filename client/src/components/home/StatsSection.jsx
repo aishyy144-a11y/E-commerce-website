@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import api from '../../utils/api';
 import { 
   HiOutlineCollection, 
   HiOutlineCube, 
@@ -14,7 +14,7 @@ const StatsSection = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/public/stats');
+        const response = await api.get('/api/public/stats');
         setCounts(response.data);
       } catch (err) {
         console.error('Error fetching stats:', err);

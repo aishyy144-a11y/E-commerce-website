@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
+import api from '../utils/api';
 import axios from 'axios';
 import { FiPackage, FiTruck, FiCheckCircle, FiSearch, FiAlertCircle, FiClock, FiMapPin } from 'react-icons/fi';
 
@@ -29,8 +30,7 @@ const TrackOrder = () => {
     setOrder(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const { data } = await axios.get(`${apiUrl}/api/orders/track/${queryId.trim()}`);
+      const { data } = await api.get(`/api/orders/track/${queryId.trim()}`);
       console.log('Tracking data received:', data);
       setOrder(data);
     } catch (err) {

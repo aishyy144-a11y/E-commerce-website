@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
 import axios from 'axios';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -22,10 +23,9 @@ const AdminAnalytics = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('token');
       const [orderRes, catRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/orders', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/categories')
+        api.get('/api/orders'),
+        api.get('/api/categories')
       ]);
 
       const orders = orderRes.data;

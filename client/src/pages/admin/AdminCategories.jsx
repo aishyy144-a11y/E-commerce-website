@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -31,7 +32,7 @@ const AdminCategories = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/categories');
+      const response = await api.get('/api/categories');
       setCategories(response.data);
     } catch (err) {
       toast.error('Failed to load categories');
@@ -54,10 +55,7 @@ const AdminCategories = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure? This may affect products in this category.')) return;
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/categories/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/categories/${id}`);
       toast.success('Category deleted');
       fetchCategories();
     } catch (err) {
@@ -68,16 +66,11 @@ const AdminCategories = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = sessionStorage.getItem('token');
       if (editingCategory) {
-        await axios.put(`http://localhost:5000/api/categories/${editingCategory._id}`, formData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.put(`/api/categories/${editingCategory._id}`, formData);
         toast.success('Category updated successfully');
       } else {
-        await axios.post('http://localhost:5000/api/categories', formData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.post('/api/categories', formData);
         toast.success('Category created');
       }
       setShowModal(false);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
 import axios from 'axios';
 import { 
   HiOutlineCloudUpload, 
@@ -32,7 +33,7 @@ const AdminBulkUpload = () => {
         throw new Error('Data must be an array of products.');
       }
 
-      const response = await axios.post('http://localhost:5000/api/products/bulk', products);
+      const response = await api.post('/api/products/bulk', products);
       setSuccess(`Successfully uploaded ${response.data.length} products!`);
       setJsonInput('');
       setTimeout(() => navigate('/admin/products'), 2000);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff, HiOutlineArrowLeft } from 'react-icons/hi';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import api from '../utils/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -28,7 +29,7 @@ const ResetPassword = () => {
 
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/auth'}/reset-password/${token}`, { password });
+      await api.post(`/api/auth/reset-password/${token}`, { password });
       toast.success('Password reset successfully! Please login.');
       navigate('/login');
     } catch (err) {

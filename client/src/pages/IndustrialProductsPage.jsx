@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import api from '../utils/api';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../context/CartContext';
@@ -48,8 +49,8 @@ const IndustrialProductsPage = () => {
     queryKey: ['shop-data'],
     queryFn: async () => {
       const [prodRes, catRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/products/all'),
-        axios.get('http://localhost:5000/api/categories')
+        api.get('/api/products/all'),
+        api.get('/api/categories')
       ]);
       return { products: prodRes.data, categories: catRes.data };
     }

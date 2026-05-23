@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 import { 
   HiOutlineLightningBolt, 
   HiOutlineSupport, 
@@ -21,7 +21,7 @@ const Categories = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/categories');
+        const response = await api.get('/api/categories');
         setCategories(response.data);
       } catch (err) {
         console.error('Error fetching categories:', err);

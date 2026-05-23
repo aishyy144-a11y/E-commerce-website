@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../utils/api';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -13,10 +14,8 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       sessionStorage.setItem('token', token);
     } else {
-      delete axios.defaults.headers.common['Authorization'];
       sessionStorage.removeItem('token');
     }
   }, [token]);
@@ -31,14 +30,14 @@ export const AuthProvider = ({ children }) => {
   }, [user]);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/login`, { email, password });
+    const response = await api.post('/api/auth/login', { email, password });
     setUser(response.data.user);
     setToken(response.data.token);
     return response.data;
   };
 
   const register = async (name, email, password) => {
-    const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/register`, { name, email, password });
+    const response = await api.post('/api/auth/register', { name, email, password });
     setUser(response.data.user);
     setToken(response.data.token);
     return response.data;

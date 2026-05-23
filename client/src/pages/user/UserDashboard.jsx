@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -23,10 +24,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchRecentOrders = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/orders/myorders', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/api/orders/myorders');
         setRecentOrders(response.data.slice(0, 3));
       } catch (err) {
         console.error('Error fetching orders:', err);

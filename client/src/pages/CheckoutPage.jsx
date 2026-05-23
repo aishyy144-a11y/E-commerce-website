@@ -15,6 +15,7 @@ import {
 } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -94,9 +95,7 @@ const CheckoutPage = () => {
         } : undefined
       };
 
-      const response = await axios.post('http://localhost:5000/api/orders', orderData, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
+      const response = await api.post('/api/orders', orderData);
 
       setOrderId(response.data._id);
       const assignedOrderNumber = response.data.orderNumber || response.data._id.toString().slice(-8).toUpperCase();

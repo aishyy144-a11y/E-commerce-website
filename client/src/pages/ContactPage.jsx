@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker, HiOutlineChatAlt, HiOutlineChevronDown, HiOutlineCheckCircle, HiOutlineGlobe } from 'react-icons/hi';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import api from '../utils/api';
 import axios from 'axios';
 
 const ContactCard = ({ icon: Icon, title, info, subInfo, color = "primary", href }) => {
@@ -86,7 +87,7 @@ const ContactPage = () => {
     setError('');
     
     try {
-      await axios.post('http://localhost:5000/api/inquiries', {
+      await api.post('/api/inquiries', {
         ...formData,
         phone: formData.phone || 'Not Provided' // Add phone field if missing
       });

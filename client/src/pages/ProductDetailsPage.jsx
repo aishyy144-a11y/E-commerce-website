@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../utils/api';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import DroneProductSpecs from '../components/home/DroneProductSpecs';
@@ -56,11 +57,11 @@ const ProductDetailsPage = () => {
     const fetchProductData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/products/${slug}`);
+        const response = await api.get(`/api/products/${slug}`);
         setProduct(response.data);
         
         // Fetch related products (same category)
-        const relatedRes = await axios.get(`http://localhost:5000/api/products/category/${response.data.category.slug}`);
+        const relatedRes = await api.get(`/api/products/category/${response.data.category.slug}`);
         setRelatedProducts(relatedRes.data.filter(p => p._id !== response.data._id));
       } catch (err) {
         console.error('Error fetching product details:', err);

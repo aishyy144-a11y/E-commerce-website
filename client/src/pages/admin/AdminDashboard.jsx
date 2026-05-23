@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import api from '../../utils/api';
 import { 
   HiOutlineCube, 
   HiOutlineTag, 
@@ -20,8 +20,8 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
       try {
         const [prodRes, catRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/products/all'),
-          axios.get('http://localhost:5000/api/categories')
+          api.get('/api/products/all'),
+          api.get('/api/categories')
         ]);
         
         const products = prodRes.data;

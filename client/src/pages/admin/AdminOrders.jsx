@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -26,10 +27,7 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/orders', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/api/orders');
       setOrders(response.data);
       // Update selected order reference if it exists
       if (selectedOrder) {
@@ -46,15 +44,12 @@ const AdminOrders = () => {
 
   const updateStatus = async (id, status) => {
     try {
-      const token = sessionStorage.getItem('token');
       const data = { status };
       if (status === 'Shipped' && trackingId) {
         data.trackingId = trackingId;
       }
       
-      await axios.put(`http://localhost:5000/api/orders/${id}/status`, data, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/api/orders/${id}/status`, data);
       toast.success(`Order ${status} Successfully`);
       setTrackingId('');
       fetchOrders();
@@ -66,10 +61,7 @@ const AdminOrders = () => {
   const deleteOrder = async (id) => {
     if (!window.confirm('Delete this order permanently?')) return;
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/orders/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/orders/${id}`);
       toast.success('Order deleted');
       setSelectedOrder(null);
       fetchOrders();

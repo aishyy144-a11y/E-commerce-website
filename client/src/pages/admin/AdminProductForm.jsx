@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import api from '../../utils/api';
 import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -33,7 +34,7 @@ const AdminProductForm = () => {
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const response = await axios.get('http://localhost:5000/api/categories');
+      const response = await api.get('/api/categories');
       return response.data;
     }
   });
@@ -41,7 +42,7 @@ const AdminProductForm = () => {
   const { isLoading: isProductLoading } = useQuery({
     queryKey: ['admin-product', id],
     queryFn: async () => {
-      const response = await axios.get(`http://localhost:5000/api/products/all`);
+      const response = await api.get('/api/products/all');
       const product = response.data.find(p => p._id === id);
       if (product) {
         setFormData({
@@ -58,15 +59,10 @@ const AdminProductForm = () => {
 
   const mutation = useMutation({
     mutationFn: async (dataToSubmit) => {
-      const token = sessionStorage.getItem('token');
       if (isEdit) {
-        return axios.put(`http://localhost:5000/api/products/${id}`, dataToSubmit, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        return api.put(`/api/products/${id}`, dataToSubmit);
       } else {
-        return axios.post('http://localhost:5000/api/products', dataToSubmit, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        return api.post('/api/products', dataToSubmit);
       }
     },
     onSuccess: () => {

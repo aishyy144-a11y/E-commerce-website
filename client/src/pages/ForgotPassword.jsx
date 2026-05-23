@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { HiOutlineMail, HiOutlineArrowLeft, HiOutlineCheckCircle } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
+import api from '../utils/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -14,7 +15,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/auth'}/forgot-password`, { email });
+      await api.post('/api/auth/forgot-password', { email });
       setSubmitted(true);
       toast.success('Reset link sent to your email');
     } catch (err) {

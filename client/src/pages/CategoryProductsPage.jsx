@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import api from '../utils/api';
 import { useCart } from '../context/CartContext';
 import DroneProductSpecs from '../components/home/DroneProductSpecs';
 import LMRProductSpecs from '../components/home/LMRProductSpecs';
@@ -61,13 +61,13 @@ const CategoryProductsPage = () => {
       try {
         setLoading(true);
         // Fetch all categories to find the current one by slug
-        const catRes = await axios.get('http://localhost:5000/api/categories');
+        const catRes = await api.get('/api/categories');
         const currentCat = catRes.data.find(c => c.slug === slug);
         if (currentCat) {
           setCategory(currentCat);
         }
 
-        const response = await axios.get(`http://localhost:5000/api/products/category/${slug}`);
+        const response = await api.get(`/api/products/category/${slug}`);
         setProducts(response.data);
         setFilteredProducts(response.data);
       } catch (err) {

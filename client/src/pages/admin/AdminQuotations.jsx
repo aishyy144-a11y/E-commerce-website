@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -26,10 +27,7 @@ const AdminQuotations = () => {
 
   const fetchInquiries = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/inquiries', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/api/inquiries');
       setInquiries(response.data);
     } catch (err) {
       console.error('Error fetching inquiries:', err);
@@ -41,10 +39,7 @@ const AdminQuotations = () => {
 
   const updateStatus = async (id, status) => {
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/inquiries/${id}/status`, { status }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/api/inquiries/${id}/status`, { status });
       toast.success('Status updated');
       fetchInquiries();
     } catch (err) {
@@ -55,10 +50,7 @@ const AdminQuotations = () => {
   const deleteInquiry = async (id) => {
     if (!window.confirm('Delete this inquiry?')) return;
     try {
-      const token = sessionStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/inquiries/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/inquiries/${id}`);
       toast.success('Inquiry deleted');
       fetchInquiries();
       setSelectedInquiry(null);

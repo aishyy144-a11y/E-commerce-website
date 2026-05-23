@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   HiOutlinePencilAlt, 
@@ -18,17 +18,14 @@ const AdminProducts = () => {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['admin-products'],
     queryFn: async () => {
-      const response = await axios.get('http://localhost:5000/api/products/all');
+      const response = await api.get('/api/products/all');
       return response.data;
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const token = sessionStorage.getItem('token');
-      return axios.delete(`http://localhost:5000/api/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      return api.delete(`/api/products/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-products']);

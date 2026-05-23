@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { HiOutlineMailOpen } from 'react-icons/hi';
+import api from '../../utils/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -16,7 +17,7 @@ const Newsletter = () => {
     try {
       // Changed from /api/newsletter/subscribe to /api/newsletter/subscribe
       // Since index.js mounts apiRoutes at /api, and api.js defines /newsletter/subscribe
-      const response = await axios.post('http://localhost:5000/api/newsletter/subscribe', { email });
+      const response = await api.post('/api/newsletter/subscribe', { email });
       toast.success(response.data.message);
       setEmail('');
     } catch (err) {

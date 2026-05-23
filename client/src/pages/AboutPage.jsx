@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import api from '../utils/api';
 import axios from 'axios';
 import aboutImg from '../assets/about.png';
 import { 
@@ -51,7 +52,7 @@ const AboutPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/categories');
+        const response = await api.get('/api/categories');
         setCategories(response.data);
       } catch (err) {
         console.error('Error fetching categories:', err);

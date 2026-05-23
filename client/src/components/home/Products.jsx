@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiOutlineShoppingBag, HiOutlineEye, HiOutlineChevronRight, HiOutlineArrowRight, HiOutlineHeart, HiHeart } from 'react-icons/hi';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -16,7 +16,7 @@ const Products = () => {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['latest-products'],
     queryFn: async () => {
-      const response = await axios.get('http://localhost:5000/api/products/all?limit=8');
+      const response = await api.get('/api/products/all?limit=8');
       return response.data;
     }
   });
