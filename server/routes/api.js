@@ -540,15 +540,14 @@ router.post('/orders', optionalProtect, async (req, res) => {
 
     const createdOrder = await order.save();
 
-    // Send email to admin
-    try {
-      const customerName = req.user ? req.user.name : guestInfo?.name || 'Guest';
-      const customerEmail = req.user ? req.user.email : guestInfo?.email || 'N/A';
+    // Send email to admin asynchronously in the background to avoid blocking order creation
+    const customerName = req.user ? req.user.name : guestInfo?.name || 'Guest';
+    const customerEmail = req.user ? req.user.email : guestInfo?.email || 'N/A';
 
-      await sendEmail({
-        email: 'innovativesolutions.support.pk@gmail.com',
-        subject: `🚨 NEW ORDER ALERT - #${createdOrder.orderNumber || createdOrder._id.toString().slice(-8).toUpperCase()}`,
-        message: `
+    sendEmail({
+      email: 'innovativesolutions.support.pk@gmail.com',
+      subject: `🚨 NEW ORDER ALERT - #${createdOrder.orderNumber || createdOrder._id.toString().slice(-8).toUpperCase()}`,
+      message: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; background-color: #f8fafc; max-width: 850px; margin: auto;">
             <div style="background-color: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
               <!-- Professional Header -->
@@ -679,11 +678,10 @@ router.post('/orders', optionalProtect, async (req, res) => {
               </div>
             </div>
           </div>
-        `
-      });
-    } catch (emailErr) {
+      `
+    }).catch(emailErr => {
       console.error('Email notification failed:', emailErr);
-    }
+    });
 
     res.status(201).json(createdOrder);
   } catch (err) {
