@@ -56,20 +56,20 @@ const Navbar = () => {
   return (
     <>
       <header 
-        className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
           isScrolled 
-            ? 'py-4 bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-100' 
-            : 'py-6 bg-transparent'
+            ? 'py-3 md:py-4 bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-100' 
+            : 'py-4 md:py-6 bg-white/90 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border-b border-gray-100 md:border-b-0'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-8">
+          <div className="flex items-center justify-between gap-2 md:gap-8">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
               <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 group-hover:rotate-12 transition-transform duration-500">
                 <HiOutlineLightBulb className="text-white text-2xl md:text-3xl" />
               </div>
-              <div className="flex flex-col">
+              <div className="hidden md:flex flex-col">
                 <span className="text-lg md:text-xl font-black text-gray-900 tracking-tighter leading-none uppercase">Innovative</span>
                 <span className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-[0.3em]">Solutions</span>
               </div>
@@ -133,7 +133,7 @@ const Navbar = () => {
               </Link>
 
               {/* User Profile */}
-              <div className="relative group/user py-2">
+              <div className="hidden md:block relative group/user py-2">
                 <button 
                   onClick={() => !user && navigate('/login', { state: { from: location.pathname } })}
                   className="flex items-center gap-3 p-1.5 md:pl-1.5 md:pr-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-primary/20 transition-all"
@@ -181,7 +181,7 @@ const Navbar = () => {
               {/* Mobile Menu Toggle */}
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="xl:hidden p-3 text-gray-900 bg-gray-50 rounded-2xl"
+                className="xl:hidden p-3 text-gray-900 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all rounded-2xl flex items-center justify-center border border-gray-200"
               >
                 {isMobileMenuOpen ? <HiOutlineX size={24} /> : <HiOutlineMenuAlt3 size={24} />}
               </button>
