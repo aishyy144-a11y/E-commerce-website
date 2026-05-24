@@ -46,7 +46,7 @@ const Products = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-5xl md:text-6xl font-black text-slate-900 mb-6"
+              className="text-4xl md:text-6xl font-black text-slate-900 mb-4 md:mb-6"
             >
               Latest <span className="text-blue-600 italic">Products</span>
             </motion.h2>
@@ -55,7 +55,7 @@ const Products = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-slate-500 text-lg max-w-xl font-medium"
+              className="text-slate-500 text-base md:text-lg max-w-xl font-medium"
             >
               Discover our newest arrivals in high-grade technical equipment and specialized industrial components.
             </motion.p>
@@ -68,16 +68,16 @@ const Products = () => {
           >
             <Link 
               to="/shop"
-              className="px-10 py-5 bg-white text-slate-900 rounded-[24px] font-black text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-slate-200 border border-slate-100 hover:border-blue-600 hover:text-blue-600 transition-all"
+              className="px-8 md:px-10 py-4 md:py-5 bg-white text-slate-900 rounded-2xl md:rounded-[24px] font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-slate-200 border border-slate-100 hover:border-blue-600 hover:text-blue-600 transition-all"
             >
               View All Products
-              <HiOutlineArrowRight size={20} />
+              <HiOutlineArrowRight size={18} className="md:size-[20px]" />
             </Link>
           </motion.div>
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <AnimatePresence>
             {products.map((product, index) => (
               <motion.div
@@ -86,10 +86,10 @@ const Products = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-white rounded-[32px] p-4 shadow-sm hover:shadow-2xl transition-all group border border-slate-100 flex flex-col h-full"
+                className="bg-white rounded-2xl md:rounded-[32px] p-2 md:p-4 shadow-sm hover:shadow-2xl transition-all group border border-slate-100 flex flex-col h-full"
               >
                 {/* Image Section */}
-                <div className="relative aspect-square rounded-[24px] overflow-hidden mb-4 bg-slate-50">
+                <div className="relative aspect-square rounded-xl md:rounded-[24px] overflow-hidden mb-3 md:mb-4 bg-slate-50">
                   <Link to={`/product/${product.slug}`} state={{ from: location.pathname }}>
                     <img 
                       src={product.images[0] || 'https://via.placeholder.com/400'} 
@@ -100,19 +100,19 @@ const Products = () => {
                   </Link>
                   
                   {/* Badges */}
-                  <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    <span className="px-3 py-1.5 bg-white/90 backdrop-blur-md text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-blue-50">
+                  <div className="absolute top-2 md:top-4 left-2 md:left-4 flex flex-col gap-1 md:gap-2">
+                    <span className="px-2 py-1 md:px-3 md:py-1.5 bg-white/90 backdrop-blur-md text-blue-600 text-[8px] md:text-[10px] font-black uppercase tracking-widest rounded-md md:rounded-lg shadow-sm border border-blue-50">
                       {product.brand}
                     </span>
                     {product.requiresQuote && (
-                      <span className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm">
-                        Quote Only
+                      <span className="px-2 py-1 md:px-3 md:py-1.5 bg-amber-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest rounded-md md:rounded-lg shadow-sm">
+                        Quote
                       </span>
                     )}
                   </div>
 
-                  {/* Hover Quick Actions */}
-                  <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                  {/* Hover Quick Actions - Adjusted for Mobile (always visible or tap) */}
+                  <div className="absolute inset-0 bg-slate-900/10 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1.5 md:gap-3">
                     <button 
                       onClick={(e) => {
                         e.preventDefault();
@@ -122,73 +122,52 @@ const Products = () => {
                           toggleWishlist(product);
                         }
                       }}
-                      className={`p-4 rounded-2xl shadow-xl transition-all transform translate-y-8 group-hover:translate-y-0 duration-500 ${
+                      className={`p-2 md:p-4 rounded-xl md:rounded-2xl shadow-xl transition-all transform translate-y-8 md:group-hover:translate-y-0 duration-500 ${
                         isInWishlist(product._id) 
                           ? 'bg-primary text-white' 
                           : 'bg-white text-slate-900 hover:bg-primary hover:text-white'
                       }`}
                     >
-                      {isInWishlist(product._id) ? <HiHeart size={24} /> : <HiOutlineHeart size={24} />}
+                      {isInWishlist(product._id) ? <HiHeart size={18} className="md:size-[24px]" /> : <HiOutlineHeart size={18} className="md:size-[24px]" />}
                     </button>
                     <Link 
                       to={`/product/${product.slug}`}
                       state={{ from: location.pathname }}
-                      className="p-4 bg-white text-slate-900 rounded-2xl shadow-xl hover:bg-blue-600 hover:text-white transition-all transform translate-y-8 group-hover:translate-y-0 duration-500 delay-75"
+                      className="p-2 md:p-4 bg-white text-slate-900 rounded-xl md:rounded-2xl shadow-xl hover:bg-blue-600 hover:text-white transition-all transform translate-y-8 md:group-hover:translate-y-0 duration-500 delay-75"
                     >
-                      <HiOutlineEye size={24} />
+                      <HiOutlineEye size={18} className="md:size-[24px]" />
                     </Link>
-                    {!product.requiresQuote && (
-                      <button 
-                        onClick={() => addToCart(product)}
-                        className="p-4 bg-white text-slate-900 rounded-2xl shadow-xl hover:bg-blue-600 hover:text-white transition-all transform translate-y-8 group-hover:translate-y-0 duration-500 delay-150"
-                      >
-                        <HiOutlineShoppingBag size={24} />
-                      </button>
-                    )}
                   </div>
                 </div>
 
                 {/* Content Section */}
                 <div className="flex-grow">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                  <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
+                    <span className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] md:tracking-[0.2em] truncate">
                       {product.category?.name || 'Industrial'}
-                    </span>
-                    <div className="w-1 h-1 bg-slate-200 rounded-full"></div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                      PN: {product.modelNumber || 'N/A'}
                     </span>
                   </div>
                   
                   <Link to={`/product/${product.slug}`} state={{ from: location.pathname }}>
-                    <h3 className="text-xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
+                    <h3 className="text-sm md:text-xl font-black text-slate-900 mb-1 md:mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                       {product.name}
                     </h3>
                   </Link>
-
-                  {/* Technical Tags (First 2 specs) */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {product.specifications && Object.entries(product.specifications).slice(0, 2).map(([key, value]) => (
-                      <span key={key} className="px-2.5 py-1 bg-slate-50 text-slate-500 text-[10px] font-bold rounded-md border border-slate-100 uppercase tracking-tighter">
-                        {value}
-                      </span>
-                    ))}
-                  </div>
                 </div>
 
                 {/* Bottom Section */}
-                <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
+                <div className="pt-2 md:pt-4 border-t border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-2">
                   <div className="flex flex-col">
-                    <span className="text-2xl font-black text-slate-900 tracking-tighter">Rs {product.price.toLocaleString()}</span>
+                    <span className="text-base md:text-2xl font-black text-slate-900 tracking-tighter">Rs {product.price.toLocaleString()}</span>
                   </div>
                   
                   <Link 
                     to={`/product/${product.slug}`}
                     state={{ from: location.pathname }}
-                    className="flex items-center gap-2 text-blue-600 font-black text-[10px] uppercase tracking-widest group/btn"
+                    className="flex items-center gap-1 md:gap-2 text-blue-600 font-black text-[8px] md:text-[10px] uppercase tracking-widest group/btn"
                   >
                     Details
-                    <HiOutlineChevronRight className="group-hover/btn:translate-x-1 transition-transform" size={16} />
+                    <HiOutlineChevronRight className="group-hover/btn:translate-x-1 transition-transform" size={14} className="md:size-[16px]" />
                   </Link>
                 </div>
               </motion.div>

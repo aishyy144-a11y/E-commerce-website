@@ -138,12 +138,12 @@ const ProductDetailsPage = () => {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 lg:gap-24">
           
           {/* Left: Image Gallery */}
-          <div className="space-y-6">
-            <div className="relative aspect-square rounded-[40px] overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
+          <div className="space-y-4 md:space-y-6">
+            <div className="relative aspect-square md:aspect-square rounded-[24px] md:rounded-[40px] overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
               <Swiper
                 style={{
                   '--swiper-navigation-color': '#1E40AF',
@@ -151,6 +151,7 @@ const ProductDetailsPage = () => {
                 }}
                 spaceBetween={10}
                 navigation={true}
+                pagination={{ clickable: true }}
                 thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
                 modules={[FreeMode, Navigation, Thumbs, Pagination]}
                 className="w-full h-full"
@@ -169,10 +170,10 @@ const ProductDetailsPage = () => {
             </div>
             
             {/* Thumbnails */}
-            <div className="px-4">
+            <div className="px-2 md:px-4">
               <Swiper
                 onSwiper={setThumbsSwiper}
-                spaceBetween={15}
+                spaceBetween={10}
                 slidesPerView={4}
                 freeMode={true}
                 watchSlidesProgress={true}
@@ -181,7 +182,7 @@ const ProductDetailsPage = () => {
               >
                 {product.images.map((img, idx) => (
                   <SwiperSlide key={idx} className="cursor-pointer">
-                    <div className="aspect-square rounded-2xl overflow-hidden border-2 border-transparent swiper-slide-thumb-active:border-primary transition-all">
+                    <div className="aspect-square rounded-xl md:rounded-2xl overflow-hidden border-2 border-transparent swiper-slide-thumb-active:border-primary transition-all">
                       <img 
                         src={img} 
                         alt={product.name} 
@@ -201,28 +202,28 @@ const ProductDetailsPage = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <div className="flex items-center gap-3 mb-6">
-                <span className="px-4 py-1.5 bg-primary-light text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/10">
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <span className="px-3 md:px-4 py-1 md:py-1.5 bg-primary-light text-primary rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest border border-primary/10">
                   {product.brand} Professional
                 </span>
-                <span className={`text-[10px] font-black uppercase tracking-widest ${product.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${product.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {product.stock > 0 ? '• In Stock' : '• Out of Stock'}
                 </span>
               </div>
 
-              <h1 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4 leading-tight">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-3 md:mb-4 leading-tight">
                 {product.name}
               </h1>
               
-              <div className="flex items-center gap-4 mb-8">
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Model: <span className="text-gray-900">{product.modelNumber}</span></p>
-                <div className="w-px h-4 bg-gray-200"></div>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Category: <span className="text-gray-900">{product.category.name}</span></p>
+              <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+                <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Model: <span className="text-gray-900">{product.modelNumber}</span></p>
+                <div className="w-px h-3 md:h-4 bg-gray-200"></div>
+                <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Category: <span className="text-gray-900">{product.category.name}</span></p>
               </div>
 
-              <div className="text-4xl font-black text-primary mb-10">
+              <div className="text-2xl md:text-4xl font-black text-primary mb-6 md:mb-10">
                 Rs {product.price.toLocaleString()}
-                <span className="text-xs text-gray-400 font-bold ml-2 uppercase tracking-tighter">Excl. VAT & Shipping</span>
+                <span className="text-[10px] md:text-xs text-gray-400 font-bold ml-2 uppercase tracking-tighter">Excl. VAT & Shipping</span>
               </div>
 
               <div className="space-y-8 mb-12">

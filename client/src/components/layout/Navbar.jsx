@@ -65,13 +65,13 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-8">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-              <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 group-hover:rotate-12 transition-transform duration-500">
-                <HiOutlineLightBulb className="text-white text-3xl" />
+            <Link to="/" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 group-hover:rotate-12 transition-transform duration-500">
+                <HiOutlineLightBulb className="text-white text-2xl md:text-3xl" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-black text-gray-900 tracking-tighter leading-none uppercase">Innovative</span>
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Solutions</span>
+                <span className="text-lg md:text-xl font-black text-gray-900 tracking-tighter leading-none uppercase">Innovative</span>
+                <span className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-[0.3em]">Solutions</span>
               </div>
             </Link>
 

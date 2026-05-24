@@ -49,7 +49,7 @@ const Newsletter = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-2xl md:text-4xl font-black text-white mb-4 leading-tight"
+              className="text-xl md:text-4xl font-black text-white mb-4 leading-tight"
             >
               Get Technical <br /> <span className="text-blue-200 italic">Updates & Insights</span>
             </motion.h2>
@@ -59,7 +59,7 @@ const Newsletter = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-blue-100 text-sm mb-6 font-medium"
+              className="text-blue-100 text-xs md:text-sm mb-6 font-medium px-4"
             >
               Join 5,000+ industry professionals receiving the latest equipment releases, 
               maintenance guides, and exclusive enterprise offers directly.
@@ -70,7 +70,7 @@ const Newsletter = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="relative max-w-xl mx-auto"
+              className="relative max-w-xl mx-auto flex flex-col md:block gap-3"
               onSubmit={handleSubmit}
             >
               <input 
@@ -78,12 +78,12 @@ const Newsletter = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="w-full px-8 py-4 bg-white rounded-[20px] text-slate-900 font-bold focus:outline-none shadow-2xl placeholder:text-slate-400"
+                placeholder="Enter your email"
+                className="w-full px-6 md:px-8 py-4 bg-white rounded-2xl md:rounded-[20px] text-slate-900 font-bold focus:outline-none shadow-2xl placeholder:text-slate-400 text-sm md:text-base"
               />
               <button 
                 disabled={loading}
-                className="absolute right-1.5 top-1.5 bottom-1.5 px-8 bg-blue-600 text-white font-black rounded-[16px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 disabled:opacity-50"
+                className="md:absolute right-1.5 top-1.5 bottom-1.5 px-8 py-4 md:py-0 bg-blue-600 text-white font-black rounded-xl md:rounded-[16px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 disabled:opacity-50 text-sm md:text-base"
               >
                 {loading ? '...' : 'Subscribe'}
               </button>
