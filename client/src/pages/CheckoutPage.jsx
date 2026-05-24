@@ -44,6 +44,12 @@ const CheckoutPage = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
 
+  useEffect(() => {
+    if (cart.length === 0 && !isSuccess) {
+      navigate('/cart');
+    }
+  }, [cart, isSuccess, navigate]);
+
   // No longer redirecting to login automatically
   /*
   useEffect(() => {
