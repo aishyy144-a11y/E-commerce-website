@@ -187,305 +187,306 @@ const CheckoutPage = () => {
           Back to Cart
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
-          {/* Checkout Form */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-8 md:space-y-12"
-          >
-            <section>
-              <div className="flex items-center gap-4 mb-6 md:mb-8">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                  <HiOutlineTruck size={20} className="md:size-[24px]" />
+        <form id="checkout-form" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
+            {/* Checkout Form */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-8 md:space-y-12"
+            >
+              <section>
+                <div className="flex items-center gap-4 mb-6 md:mb-8">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                    <HiOutlineTruck size={20} className="md:size-[24px]" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tighter">Shipping Logistics</h2>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tighter">Shipping Logistics</h2>
-              </div>
 
-              <form id="checkout-form" onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-                {!user && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/50 p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-blue-100 mb-6"
-                  >
-                    <div className="md:col-span-2 mb-2">
-                      <h3 className="text-xs md:text-sm font-black text-blue-900 uppercase tracking-widest">Guest Checkout</h3>
-                      <p className="text-[9px] md:text-[10px] text-blue-600 font-bold uppercase">Enter your contact details to proceed without an account.</p>
+                <div className="space-y-4 md:space-y-6">
+                  {!user && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-blue-50/50 p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-blue-100 mb-6"
+                    >
+                      <div className="md:col-span-2 mb-2">
+                        <h3 className="text-xs md:text-sm font-black text-blue-900 uppercase tracking-widest">Guest Checkout</h3>
+                        <p className="text-[9px] md:text-[10px] text-blue-600 font-bold uppercase">Enter your contact details to proceed without an account.</p>
+                      </div>
+                      <div className="space-y-1.5 md:space-y-2">
+                        <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                        <input 
+                          required name="name" value={formData.name} onChange={handleChange}
+                          className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
+                          placeholder="Your Name"
+                        />
+                      </div>
+                      <div className="space-y-1.5 md:space-y-2">
+                        <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                        <input 
+                          required type="email" name="email" value={formData.email} onChange={handleChange}
+                          className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
+                          placeholder="email@example.com"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Street Address</label>
+                      <div className="relative">
+                        <input 
+                          required name="address" value={formData.address} onChange={handleChange}
+                          className="w-full pl-11 md:pl-12 pr-4 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
+                          placeholder="House No, Street Name"
+                        />
+                        <HiOutlineLocationMarker className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} className="md:size-[20px]" />
+                      </div>
                     </div>
                     <div className="space-y-1.5 md:space-y-2">
-                      <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                      <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">City</label>
                       <input 
-                        required name="name" value={formData.name} onChange={handleChange}
+                        required name="city" value={formData.city} onChange={handleChange}
                         className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
-                        placeholder="Your Name"
+                        placeholder="e.g. Lahore, Karachi"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Postal Code</label>
+                      <input 
+                        required name="postalCode" value={formData.postalCode} onChange={handleChange}
+                        className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
+                        placeholder="54000"
                       />
                     </div>
                     <div className="space-y-1.5 md:space-y-2">
-                      <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                      <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Country</label>
                       <input 
-                        required type="email" name="email" value={formData.email} onChange={handleChange}
+                        required name="country" value={formData.country} onChange={handleChange}
                         className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
-                        placeholder="email@example.com"
+                        placeholder="Pakistan"
                       />
                     </div>
-                  </motion.div>
-                )}
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-1.5 md:space-y-2">
-                    <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Street Address</label>
+                    <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
                     <div className="relative">
                       <input 
-                        required name="address" value={formData.address} onChange={handleChange}
+                        required type="tel" name="phone" value={formData.phone} onChange={handleChange}
                         className="w-full pl-11 md:pl-12 pr-4 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
-                        placeholder="House No, Street Name"
+                        placeholder="03XX-XXXXXXX"
                       />
-                      <HiOutlineLocationMarker className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} className="md:size-[20px]" />
+                      <HiOutlinePhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} className="md:size-[20px]" />
                     </div>
                   </div>
-                  <div className="space-y-1.5 md:space-y-2">
-                    <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">City</label>
-                    <input 
-                      required name="city" value={formData.city} onChange={handleChange}
-                      className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
-                      placeholder="e.g. Lahore, Karachi"
-                    />
+                </div>
+              </section>
+
+              <section>
+                <div className="flex items-center gap-4 mb-6 md:mb-8">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                    <HiOutlineCreditCard size={20} className="md:size-[24px]" />
                   </div>
+                  <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tighter">Payment Protocol</h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <div className="space-y-1.5 md:space-y-2">
-                    <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Postal Code</label>
-                    <input 
-                      required name="postalCode" value={formData.postalCode} onChange={handleChange}
-                      className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
-                      placeholder="54000"
-                    />
-                  </div>
-                  <div className="space-y-1.5 md:space-y-2">
-                    <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Country</label>
-                    <input 
-                      required name="country" value={formData.country} onChange={handleChange}
-                      className="w-full px-5 md:px-6 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
-                      placeholder="Pakistan"
-                    />
-                  </div>
-                </div>
+                <div className="grid grid-cols-1 gap-3 md:gap-4">
+                  {paymentMethods.map(method => (
+                    <div key={method.id} className="space-y-3 md:space-y-4">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, paymentMethod: method.id })}
+                        className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] border-2 transition-all text-left flex items-center gap-4 md:gap-6 group ${
+                          formData.paymentMethod === method.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-white bg-white hover:border-gray-100 shadow-sm'
+                        }`}
+                      >
+                        <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-colors ${
+                          formData.paymentMethod === method.id ? 'bg-primary text-white' : 'bg-gray-50 text-gray-400 group-hover:text-primary'
+                        }`}>
+                          <method.icon size={20} className="md:size-[28px]" />
+                        </div>
+                        <div>
+                          <span className={`block font-black uppercase tracking-widest text-[10px] md:text-xs mb-0.5 md:mb-1 ${
+                            formData.paymentMethod === method.id ? 'text-primary' : 'text-gray-900'
+                          }`}>{method.name}</span>
+                          <p className="text-gray-500 text-[8px] md:text-[10px] font-medium uppercase tracking-widest">{method.description}</p>
+                        </div>
+                      </button>
 
-                <div className="space-y-1.5 md:space-y-2">
-                  <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-                  <div className="relative">
-                    <input 
-                      required type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                      className="w-full pl-11 md:pl-12 pr-4 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
-                      placeholder="03XX-XXXXXXX"
-                    />
-                    <HiOutlinePhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} className="md:size-[20px]" />
-                  </div>
-                </div>
-              </form>
-            </section>
-
-            <section>
-              <div className="flex items-center gap-4 mb-6 md:mb-8">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                  <HiOutlineCreditCard size={20} className="md:size-[24px]" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tighter">Payment Protocol</h2>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 md:gap-4">
-                {paymentMethods.map(method => (
-                  <div key={method.id} className="space-y-3 md:space-y-4">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, paymentMethod: method.id })}
-                      className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] border-2 transition-all text-left flex items-center gap-4 md:gap-6 group ${
-                        formData.paymentMethod === method.id 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-white bg-white hover:border-gray-100 shadow-sm'
-                      }`}
-                    >
-                      <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-colors ${
-                        formData.paymentMethod === method.id ? 'bg-primary text-white' : 'bg-gray-50 text-gray-400 group-hover:text-primary'
-                      }`}>
-                        <method.icon size={20} className="md:size-[28px]" />
-                      </div>
-                      <div>
-                        <span className={`block font-black uppercase tracking-widest text-[10px] md:text-xs mb-0.5 md:mb-1 ${
-                          formData.paymentMethod === method.id ? 'text-primary' : 'text-gray-900'
-                        }`}>{method.name}</span>
-                        <p className="text-gray-500 text-[8px] md:text-[10px] font-medium uppercase tracking-widest">{method.description}</p>
-                      </div>
-                    </button>
-
-                    <AnimatePresence>
-                      {formData.paymentMethod === method.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          {method.id === 'Bank Deposit' && (
-                            <div className="bg-white border border-gray-100 rounded-[32px] p-8 space-y-4 shadow-sm">
-                              <h4 className="font-black text-gray-900 uppercase tracking-widest text-xs">Bank Account Details</h4>
-                              <div className="space-y-3 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                <div className="flex justify-between text-xs">
-                                  <span className="font-bold text-gray-400 uppercase tracking-tighter">Bank Name</span>
-                                  <span className="font-black text-gray-900">Meezan Bank</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="font-bold text-gray-400 uppercase tracking-tighter">Account Title</span>
-                                  <span className="font-black text-gray-900">Innovative Solutions</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="font-bold text-gray-400 uppercase tracking-tighter">Account Number</span>
-                                  <span className="font-black text-gray-900">0123-456789-012</span>
-                                </div>
-                              </div>
-                              <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 p-4 rounded-xl border border-amber-100">
-                                Please share screenshot of deposit slip on WhatsApp (03117702133) after payment.
-                              </p>
-                            </div>
-                          )}
-
-                          {method.id === 'Credit Card' && (
-                            <div className="bg-white border border-gray-100 rounded-[32px] p-8 space-y-6 shadow-sm">
-                              <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-black text-gray-900 uppercase tracking-widest text-xs">Secure Card Payment</h4>
-                                <HiOutlineLockClosed className="text-emerald-500" />
-                              </div>
-                              <div className="space-y-4">
-                                <div className="space-y-2">
-                                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Cardholder Name</label>
-                                  <input 
-                                    name="cardName" value={formData.cardName} onChange={handleChange}
-                                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
-                                    placeholder="Full Name on Card"
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Card Number</label>
-                                  <div className="relative">
-                                    <input 
-                                      name="cardNumber" value={formData.cardNumber} onChange={handleChange}
-                                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
-                                      placeholder="0000 0000 0000 0000"
-                                    />
-                                    <HiOutlineCreditCard className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                      <AnimatePresence>
+                        {formData.paymentMethod === method.id && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                          >
+                            {method.id === 'Bank Deposit' && (
+                              <div className="bg-white border border-gray-100 rounded-[32px] p-8 space-y-4 shadow-sm">
+                                <h4 className="font-black text-gray-900 uppercase tracking-widest text-xs">Bank Account Details</h4>
+                                <div className="space-y-3 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="font-bold text-gray-400 uppercase tracking-tighter">Bank Name</span>
+                                    <span className="font-black text-gray-900">Meezan Bank</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs">
+                                    <span className="font-bold text-gray-400 uppercase tracking-tighter">Account Title</span>
+                                    <span className="font-black text-gray-900">Innovative Solutions</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs">
+                                    <span className="font-bold text-gray-400 uppercase tracking-tighter">Account Number</span>
+                                    <span className="font-black text-gray-900">0123-456789-012</span>
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                  Please share screenshot of deposit slip on WhatsApp (03117702133) after payment.
+                                </p>
+                              </div>
+                            )}
+
+                            {method.id === 'Credit Card' && (
+                              <div className="bg-white border border-gray-100 rounded-[32px] p-8 space-y-6 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h4 className="font-black text-gray-900 uppercase tracking-widest text-xs">Secure Card Payment</h4>
+                                  <HiOutlineLockClosed className="text-emerald-500" />
+                                </div>
+                                <div className="space-y-4">
                                   <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Expiry Date</label>
+                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Cardholder Name</label>
                                     <input 
-                                      name="cardExpiry" value={formData.cardExpiry} onChange={handleChange}
+                                      name="cardName" value={formData.cardName} onChange={handleChange}
                                       className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
-                                      placeholder="MM/YY"
+                                      placeholder="Full Name on Card"
                                     />
                                   </div>
                                   <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">CVC / CVV</label>
-                                    <input 
-                                      name="cardCVC" value={formData.cardCVC} onChange={handleChange}
-                                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
-                                      placeholder="123"
-                                    />
+                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Card Number</label>
+                                    <div className="relative">
+                                      <input 
+                                        name="cardNumber" value={formData.cardNumber} onChange={handleChange}
+                                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
+                                        placeholder="0000 0000 0000 0000"
+                                      />
+                                      <HiOutlineCreditCard className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Expiry Date</label>
+                                      <input 
+                                        name="cardExpiry" value={formData.cardExpiry} onChange={handleChange}
+                                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
+                                        placeholder="MM/YY"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">CVC / CVV</label>
+                                      <input 
+                                        name="cardCVC" value={formData.cardCVC} onChange={handleChange}
+                                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
+                                        placeholder="123"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {method.id === 'Cash on Delivery' && (
-                            <div className="bg-emerald-50 border border-emerald-100 rounded-[32px] p-8 shadow-sm">
-                              <p className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em] leading-relaxed">
-                                Pay with cash when your technical equipment is delivered to your doorstep. Our logistics team will contact you before arrival.
-                              </p>
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </motion.div>
-
-
-          {/* Order Summary Sidebar */}
-          <motion.aside 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:sticky lg:top-32 h-fit order-first lg:order-last"
-          >
-            <div className="bg-white rounded-[32px] md:rounded-[48px] shadow-xl border border-gray-100 overflow-hidden">
-              <div className="p-6 md:p-10 border-b border-gray-50 bg-gray-50/50">
-                <h3 className="text-xl md:text-2xl font-black text-gray-900 tracking-tighter">Order Summary</h3>
-              </div>
-
-              <div className="p-6 md:p-10 space-y-6 md:space-y-8">
-                {/* Cart Items Preview */}
-                <div className="space-y-4 max-h-[200px] md:max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {cart.map((item) => (
-                    <div key={item._id} className="flex items-center gap-3 md:gap-4">
-                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
-                        <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 overflow-hidden">
-                        <h4 className="font-black text-gray-900 text-xs md:text-sm line-clamp-1">{item.name}</h4>
-                        <p className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase">Qty: {item.quantity} × Rs {item.price.toLocaleString()}</p>
-                      </div>
-                      <div className="text-xs md:text-sm font-black text-gray-900">
-                        Rs {(item.price * item.quantity).toLocaleString()}
-                      </div>
+                            {method.id === 'Cash on Delivery' && (
+                              <div className="bg-emerald-50 border border-emerald-100 rounded-[32px] p-8 shadow-sm">
+                                <p className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em] leading-relaxed">
+                                  Pay with cash when your technical equipment is delivered to your doorstep. Our logistics team will contact you before arrival.
+                                </p>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   ))}
                 </div>
+              </section>
+            </motion.div>
 
-                <div className="space-y-3 md:space-y-4 pt-6 md:pt-8 border-t border-gray-50">
-                  <div className="flex justify-between text-xs md:text-sm font-bold text-gray-500">
-                    <span>Subtotal</span>
-                    <span className="text-gray-900">Rs {subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-xs md:text-sm font-bold text-gray-500">
-                    <span>Shipping Logistics</span>
-                    <span className={shippingPrice === 0 ? 'text-green-500' : 'text-gray-900'}>
-                      {shippingPrice === 0 ? 'Complimentary' : `Rs ${shippingPrice.toLocaleString()}`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-4 md:pt-6 border-t border-gray-50">
-                    <span className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tighter">Total Investment</span>
-                    <span className="text-2xl md:text-3xl font-black text-primary tracking-tighter">Rs {totalPrice.toLocaleString()}</span>
-                  </div>
+
+            {/* Order Summary Sidebar */}
+            <motion.aside 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:sticky lg:top-32 h-fit"
+            >
+              <div className="bg-white rounded-[32px] md:rounded-[48px] shadow-xl border border-gray-100 overflow-hidden">
+                <div className="p-6 md:p-10 border-b border-gray-50 bg-gray-50/50">
+                  <h3 className="text-xl md:text-2xl font-black text-gray-900 tracking-tighter">Order Summary</h3>
                 </div>
 
-                <button 
-                  form="checkout-form"
-                  disabled={loading}
-                  type="submit"
-                  className="w-full py-4 md:py-5 bg-primary text-white font-black rounded-xl md:rounded-[24px] shadow-2xl shadow-primary/30 hover:bg-primary-dark transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:translate-y-0 text-sm md:text-base"
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    'Finalize Secure Order'
-                  )}
-                </button>
+                <div className="p-6 md:p-10 space-y-6 md:space-y-8">
+                  {/* Cart Items Preview */}
+                  <div className="space-y-4 max-h-[200px] md:max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {cart.map((item) => (
+                      <div key={item._id} className="flex items-center gap-3 md:gap-4">
+                        <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
+                          <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                          <h4 className="font-black text-gray-900 text-xs md:text-sm line-clamp-1">{item.name}</h4>
+                          <p className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase">Qty: {item.quantity} × Rs {item.price.toLocaleString()}</p>
+                        </div>
+                        <div className="text-xs md:text-sm font-black text-gray-900">
+                          Rs {(item.price * item.quantity).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
-                <p className="text-[10px] text-center text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
-                  By placing this order, you agree to our <br /> Enterprise Terms of Trade & Logistics Policy.
-                </p>
+                  <div className="space-y-3 md:space-y-4 pt-6 md:pt-8 border-t border-gray-50">
+                    <div className="flex justify-between text-xs md:text-sm font-bold text-gray-500">
+                      <span>Subtotal</span>
+                      <span className="text-gray-900">Rs {subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-xs md:text-sm font-bold text-gray-500">
+                      <span>Shipping Logistics</span>
+                      <span className={shippingPrice === 0 ? 'text-green-500' : 'text-gray-900'}>
+                        {shippingPrice === 0 ? 'Complimentary' : `Rs ${shippingPrice.toLocaleString()}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-4 md:pt-6 border-t border-gray-50">
+                      <span className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tighter">Total Investment</span>
+                      <span className="text-2xl md:text-3xl font-black text-primary tracking-tighter">Rs {totalPrice.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    disabled={loading}
+                    type="submit"
+                    className="w-full py-4 md:py-5 bg-primary text-white font-black rounded-xl md:rounded-[24px] shadow-2xl shadow-primary/30 hover:bg-primary-dark transition-all transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:translate-y-0 text-sm md:text-base"
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      'Finalize Secure Order'
+                    )}
+                  </button>
+
+                  <p className="text-[10px] text-center text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+                    By placing this order, you agree to our <br /> Enterprise Terms of Trade & Logistics Policy.
+                  </p>
+                </div>
               </div>
-            </div>
-          </motion.aside>
-        </div>
+            </motion.aside>
+          </div>
+        </form>
       </div>
     </div>
   );
