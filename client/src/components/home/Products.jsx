@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 
+import { ProductCardSkeleton } from '../common/Skeleton';
+
 const Products = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -22,9 +24,15 @@ const Products = () => {
   });
 
   if (isLoading) return (
-    <div className="py-48 bg-slate-50 flex items-center justify-center min-h-[600px]">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-    </div>
+    <section className="py-4 bg-slate-50 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {[...Array(8)].map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 
   return (

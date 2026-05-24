@@ -68,10 +68,10 @@ const CartPage = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8 group"
+                  className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm flex flex-row items-center gap-4 md:gap-8 group"
                 >
                   {/* Image */}
-                  <Link to={`/product/${item.slug}`} className="w-32 h-32 flex-shrink-0 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
+                  <Link to={`/product/${item.slug}`} className="w-20 h-20 md:w-32 md:h-32 flex-shrink-0 rounded-xl md:rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
                     <img 
                       src={item.images[0]} 
                       alt={item.name} 
@@ -81,42 +81,68 @@ const CartPage = () => {
                   </Link>
 
                   {/* Details */}
-                  <div className="flex-grow text-center md:text-left">
-                    <div className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
+                  <div className="flex-grow">
+                    <div className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-widest mb-0.5 md:mb-1">
                       {item.brand} • {item.modelNumber}
                     </div>
                     <Link to={`/product/${item.slug}`}>
-                      <h3 className="text-xl font-black text-gray-900 mb-1 group-hover:text-primary transition-colors">
+                      <h3 className="text-sm md:text-xl font-black text-gray-900 mb-0.5 md:mb-1 group-hover:text-primary transition-colors line-clamp-1">
                         {item.name}
                       </h3>
                     </Link>
-                    <p className="text-2xl font-black text-gray-900">Rs {item.price.toLocaleString()}</p>
+                    <p className="text-base md:text-2xl font-black text-gray-900">Rs {item.price.toLocaleString()}</p>
+                    
+                    {/* Quantity Controls - Mobile Only */}
+                    <div className="flex md:hidden items-center mt-2 gap-3">
+                      <div className="flex items-center bg-gray-50 p-1 rounded-xl border border-gray-100 scale-90 origin-left">
+                        <button 
+                          onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                          className="w-8 h-8 flex items-center justify-center text-gray-400"
+                        >
+                          <HiOutlineMinus size={14} />
+                        </button>
+                        <span className="w-8 text-center text-sm font-black text-gray-900">{item.quantity}</span>
+                        <button 
+                          onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center text-gray-400"
+                        >
+                          <HiOutlinePlus size={14} />
+                        </button>
+                      </div>
+                      <button 
+                        onClick={() => removeFromCart(item._id)}
+                        className="text-red-500 p-2"
+                      >
+                        <HiOutlineTrash size={18} />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Quantity Controls */}
-                  <div className="flex items-center bg-gray-50 p-1 rounded-2xl border border-gray-100">
+                  {/* Desktop Only Actions */}
+                  <div className="hidden md:flex items-center gap-8">
+                    <div className="flex items-center bg-gray-50 p-1 rounded-2xl border border-gray-100">
+                      <button 
+                        onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                        className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
+                      >
+                        <HiOutlineMinus size={18} />
+                      </button>
+                      <span className="w-12 text-center font-black text-gray-900">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                        className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
+                      >
+                        <HiOutlinePlus size={18} />
+                      </button>
+                    </div>
+
                     <button 
-                      onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                      className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
+                      onClick={() => removeFromCart(item._id)}
+                      className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
                     >
-                      <HiOutlineMinus size={18} />
-                    </button>
-                    <span className="w-12 text-center font-black text-gray-900">{item.quantity}</span>
-                    <button 
-                      onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                      className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
-                    >
-                      <HiOutlinePlus size={18} />
+                      <HiOutlineTrash size={24} />
                     </button>
                   </div>
-
-                  {/* Remove */}
-                  <button 
-                    onClick={() => removeFromCart(item._id)}
-                    className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
-                  >
-                    <HiOutlineTrash size={24} />
-                  </button>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -166,6 +192,22 @@ const CartPage = () => {
               </div>
             </div>
           </aside>
+        </div>
+      </div>
+
+      {/* Sticky Mobile Checkout Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 pb-6 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Total Amount</p>
+            <p className="text-xl font-black text-primary leading-none">Rs {getCartTotal().toLocaleString()}</p>
+          </div>
+          <Link 
+            to="/checkout"
+            className="px-8 py-4 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20"
+          >
+            Checkout
+          </Link>
         </div>
       </div>
     </div>

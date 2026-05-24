@@ -30,6 +30,30 @@ import 'swiper/css/pagination';
 import 'swiper/css/thumbs';
 import 'swiper/css/free-mode';
 
+import ProductCard from '../components/products/ProductCard';
+import { ProductCardSkeleton } from '../components/common/Skeleton';
+
+const ProductDetailsSkeleton = () => (
+  <div className="bg-white min-h-screen pt-24 md:pt-32">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
+        <div className="aspect-square bg-gray-100 rounded-[32px] md:rounded-[48px] animate-pulse"></div>
+        <div className="space-y-6">
+          <div className="h-4 w-24 bg-gray-100 rounded-full animate-pulse"></div>
+          <div className="h-10 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+          <div className="h-6 w-1/2 bg-gray-100 rounded-xl animate-pulse"></div>
+          <div className="h-12 w-1/3 bg-gray-100 rounded-xl animate-pulse"></div>
+          <div className="space-y-3">
+            <div className="h-4 w-full bg-gray-100 rounded-full animate-pulse"></div>
+            <div className="h-4 w-full bg-gray-100 rounded-full animate-pulse"></div>
+            <div className="h-4 w-3/4 bg-gray-100 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const ProductDetailsPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -72,11 +96,7 @@ const ProductDetailsPage = () => {
     fetchProductData();
   }, [slug]);
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    </div>
-  );
+  if (loading) return <ProductDetailsSkeleton />;
 
   if (!product) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white">
@@ -371,32 +391,23 @@ const ProductDetailsPage = () => {
           {/* Related Accessories */}
           {relatedProducts.length > 0 && (
             <section>
-              <div className="flex justify-between items-end mb-12">
+              <div className="flex justify-between items-end mb-8 md:mb-12">
                 <div>
-                  <h2 className="text-3xl font-black text-gray-900 mb-2">Related Accessories</h2>
-                  <div className="w-20 h-1.5 bg-primary rounded-full"></div>
+                  <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">Related Products</h2>
+                  <div className="w-16 md:w-20 h-1 md:h-1.5 bg-primary rounded-full"></div>
                 </div>
-                <Link to={`/category/${product.category.slug}`} className="text-primary font-bold hover:underline">View All</Link>
+                <Link to={`/category/${product.category.slug}`} className="text-primary text-sm font-bold hover:underline">View All</Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {relatedProducts.map(item => (
-                  <Link 
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
+                {relatedProducts.slice(0, 4).map((item, index) => (
+                  <ProductCard 
                     key={item._id} 
-                    to={`/product/${item.slug}`}
-                    className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl transition-all group"
-                  >
-                    <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-50">
-                      <img 
-                        src={item.images[0]} 
-                        alt={item.name} 
-                        crossOrigin="anonymous"
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                      />
-                    </div>
-                    <h3 className="font-black text-gray-900 mb-2 line-clamp-1 group-hover:text-primary transition-colors">{item.name}</h3>
-                    <p className="text-xl font-black text-primary">Rs {item.price.toLocaleString()}</p>
-                  </Link>
+                    product={item} 
+                    index={index} 
+                    category={item.category} 
+                    addToCart={addToCart} 
+                  />
                 ))}
               </div>
             </section>
@@ -404,6 +415,49 @@ const ProductDetailsPage = () => {
 
         </div>
       </main>
+
+      {/* Sticky Mobile Add to Cart Bar */}
+      {!product.requiresQuote && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 pb-6 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center gap-4">
+            <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100">
+              <button 
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-10 h-10 flex items-center justify-center font-black text-gray-500"
+              >
+                -
+              </button>
+              <span className="w-8 flex items-center justify-center font-black text-gray-900">{quantity}</span>
+              <button 
+                onClick={() => setQuantity(quantity + 1)}
+                className="w-10 h-10 flex items-center justify-center font-black text-gray-500"
+              >
+                +
+              </button>
+            </div>
+            <button 
+              onClick={handleAddToCart}
+              disabled={isAdding}
+              className="flex-grow py-3.5 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+            >
+              {isAdding ? 'Adding...' : 'Add to Cart'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Inquiry Button for Quote Products */}
+      {product.requiresQuote && (
+        <div className="md:hidden fixed bottom-6 right-6 z-[100]">
+          <button 
+            onClick={() => setShowQuoteModal(true)}
+            className="flex items-center gap-2 px-6 py-4 bg-amber-600 text-white font-black rounded-full shadow-2xl shadow-amber-600/30 animate-bounce"
+          >
+            <HiOutlineMail size={20} />
+            Request Quote
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -20,6 +20,8 @@ import AdvancedFilterSidebar from '../components/products/AdvancedFilterSidebar'
 import QuotationForm from '../components/products/QuotationForm';
 import ProductCard from '../components/products/ProductCard';
 
+import { ProductCardSkeleton } from '../components/common/Skeleton';
+
 const EmptyState = ({ onReset }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
@@ -117,8 +119,21 @@ const IndustrialProductsPage = () => {
   const handleReset = () => setFilters(initialFilters);
 
   if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    <div className="bg-gray-50 min-h-screen pt-24 md:pt-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col lg:flex-row gap-12">
+          <div className="lg:w-1/4 hidden lg:block">
+            <div className="bg-white p-6 rounded-[32px] h-[600px] animate-pulse"></div>
+          </div>
+          <div className="lg:w-3/4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
+              {[...Array(6)].map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 

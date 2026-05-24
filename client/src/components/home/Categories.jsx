@@ -13,6 +13,8 @@ import {
   HiOutlineCube
 } from 'react-icons/hi';
 
+import { CategoryCardSkeleton } from '../common/Skeleton';
+
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,9 +35,15 @@ const Categories = () => {
   }, []);
 
   if (loading) return (
-    <div className="py-24 bg-white flex items-center justify-center min-h-[400px]">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-    </div>
+    <section className="py-4 bg-white relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
+          {[...Array(6)].map((_, i) => (
+            <CategoryCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 
   return (

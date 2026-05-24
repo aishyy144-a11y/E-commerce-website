@@ -19,6 +19,8 @@ import {
 import QuotationForm from '../components/products/QuotationForm';
 import ProductCard from '../components/products/ProductCard';
 
+import { ProductCardSkeleton } from '../components/common/Skeleton';
+
 const EmptyState = () => (
   <motion.div 
     initial={{ opacity: 0 }}
@@ -122,8 +124,14 @@ const CategoryProductsPage = () => {
     : null;
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    <div className="bg-gray-50 min-h-screen pt-24 md:pt-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
+          {[...Array(8)].map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 
