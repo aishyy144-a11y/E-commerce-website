@@ -5,17 +5,17 @@ import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker, HiOutlineLightB
 
 const Footer = () => {
   return (
-    <footer className="bg-slate-900 text-white pt-12 pb-8 overflow-hidden relative">
+    <footer className="bg-slate-900 text-white pt-10 md:pt-12 pb-8 overflow-hidden relative">
       {/* Background Decorative */}
       <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-8 md:mb-12">
           
           {/* Brand Info */}
-          <div className="space-y-8">
-            <Link to="/" className="text-3xl font-black text-white flex items-center gap-3 group">
-              <div className="w-12 h-12 bg-blue-600 rounded-[18px] flex items-center justify-center shadow-2xl shadow-blue-600/40 group-hover:rotate-12 transition-transform duration-500">
+          <div className="space-y-6 md:space-y-8">
+            <Link to="/" className="text-2xl md:text-3xl font-black text-white flex items-center gap-3 group">
+              <div className="w-12 h-12 bg-blue-600 rounded-[18px] flex items-center justify-center shadow-2xl shadow-blue-600/40 group-hover:rotate-12 transition-transform duration-500 flex-shrink-0">
                 <HiOutlineLightBulb className="text-white text-3xl" />
               </div>
               <span className="tracking-tighter">INNOVATIVE <span className="text-blue-500">SOLUTIONS</span></span>
@@ -39,7 +39,7 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h4 className="text-lg font-black text-white mb-10 uppercase tracking-widest border-l-4 border-blue-600 pl-4">Contact Ops</h4>
+            <h4 className="text-lg font-black text-white mb-6 md:mb-10 uppercase tracking-widest border-l-4 border-blue-600 pl-4">Contact Ops</h4>
             <ul className="space-y-6">
               <li className="flex items-start gap-4 group">
                 <a 
@@ -95,7 +95,7 @@ const Footer = () => {
 
           {/* Industrial Sectors */}
           <div>
-            <h4 className="text-lg font-black text-white mb-10 uppercase tracking-widest border-l-4 border-blue-600 pl-4">Industrial Sectors</h4>
+            <h4 className="text-lg font-black text-white mb-6 md:mb-10 uppercase tracking-widest border-l-4 border-blue-600 pl-4">Industrial Sectors</h4>
             <ul className="grid grid-cols-1 gap-4">
               {[
                 { name: 'Drone Technology', path: '/category/drones-spare-parts' },
@@ -117,7 +117,7 @@ const Footer = () => {
 
           {/* Professional Links */}
           <div>
-            <h4 className="text-lg font-black text-white mb-10 uppercase tracking-widest border-l-4 border-blue-600 pl-4">Company</h4>
+            <h4 className="text-lg font-black text-white mb-6 md:mb-10 uppercase tracking-widest border-l-4 border-blue-600 pl-4">Company</h4>
             <ul className="space-y-4">
               <li>
                 <Link to="/about" className="text-slate-400 hover:text-blue-500 transition-colors font-bold text-sm block">
@@ -150,10 +150,10 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
+          <div className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] text-center md:text-left">
             © 2026 INNOVATIVE SOLUTIONS INDUSTRIAL. BUILT FOR PRECISION.
           </div>
-          <div className="flex gap-8">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
             <Link to="#" className="text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">Privacy Shield</Link>
             <Link to="#" className="text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">Usage Terms</Link>
             <Link to="#" className="text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">Sitemap</Link>

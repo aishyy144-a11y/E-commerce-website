@@ -212,41 +212,99 @@ const Navbar = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-[80] xl:hidden shadow-2xl p-8 flex flex-col"
+              className="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-[80] xl:hidden shadow-2xl p-6 flex flex-col"
             >
-              <div className="flex items-center justify-between mb-12">
-                <span className="text-xl font-black text-gray-900 tracking-tighter">NAVIGATION</span>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-gray-100 rounded-xl">
+              {/* Mobile Menu Header */}
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-sm font-black text-gray-400 uppercase tracking-widest">Navigation</span>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
                   <HiOutlineX size={20} />
                 </button>
               </div>
 
-              <nav className="flex-1 space-y-6">
-                {navLinks.map((link) => (
-                  <Link 
-                    key={link.name}
-                    to={link.path}
-                    className="block text-2xl font-black text-gray-900 hover:text-primary transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+              {/* User Profile Card on Mobile */}
+              {user && (
+                <div className="flex items-center gap-3 mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                  <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary border border-gray-100 flex-shrink-0">
+                    <HiOutlineUser size={20} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
+                      Welcome,
+                    </span>
+                    <span className="text-xs font-black text-gray-900 leading-none truncate">
+                      {user.name}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation Links */}
+              <nav className="flex-grow space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-4">
+                  {navLinks.map((link) => (
+                    <Link 
+                      key={link.name}
+                      to={link.path}
+                      className={`block text-xl font-black uppercase tracking-wider transition-colors ${
+                        location.pathname === link.path ? 'text-primary' : 'text-gray-900 hover:text-primary'
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Additional Authenticated User Links */}
+                {user && (
+                  <div className="pt-4 mt-4 border-t border-gray-100 space-y-3">
+                    <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Account Ops</span>
+                    {isAdmin && (
+                      <Link 
+                        to="/admin" 
+                        className="flex items-center gap-3 text-sm font-bold text-gray-700 hover:text-primary transition-all py-1"
+                      >
+                        <HiOutlineCollection size={18} /> Admin Dashboard
+                      </Link>
+                    )}
+                    <Link 
+                      to="/dashboard" 
+                      className="flex items-center gap-3 text-sm font-bold text-gray-700 hover:text-primary transition-all py-1"
+                    >
+                      <HiOutlineUser size={18} /> User Panel
+                    </Link>
+                    <Link 
+                      to="/wishlist" 
+                      className="flex items-center gap-3 text-sm font-bold text-gray-700 hover:text-primary transition-all py-1"
+                    >
+                      <HiOutlineHeart size={18} /> Wishlist
+                    </Link>
+                  </div>
+                )}
               </nav>
 
-              <div className="pt-8 border-t border-gray-100">
+              {/* Mobile Menu Footer */}
+              <div className="pt-6 border-t border-gray-100 mt-auto space-y-3">
                 <button 
                   onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
-                  className="w-full py-4 bg-gray-50 text-gray-900 font-black rounded-2xl flex items-center justify-center gap-3 mb-4"
+                  className="w-full py-3.5 bg-gray-50 text-gray-900 font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-100 transition-colors text-xs uppercase tracking-widest"
                 >
-                  <HiOutlineSearch size={20} /> Search Store
+                  <HiOutlineSearch size={18} /> Search Store
                 </button>
-                {!user && (
+                {user ? (
+                  <button 
+                    onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}
+                    className="w-full py-3.5 bg-red-50 text-red-500 font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-red-100 transition-colors text-xs uppercase tracking-widest"
+                  >
+                    Logout <HiOutlineLogout size={18} />
+                  </button>
+                ) : (
                   <Link 
                     to="/login" 
                     state={{ from: location.pathname }}
-                    className="w-full py-4 bg-primary text-white font-black rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20"
+                    className="w-full py-3.5 bg-primary text-white font-black rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20 text-xs uppercase tracking-widest"
                   >
-                    Sign In <HiOutlineUser size={20} />
+                    Sign In <HiOutlineUser size={18} />
                   </Link>
                 )}
               </div>

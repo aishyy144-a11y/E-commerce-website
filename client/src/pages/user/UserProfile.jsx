@@ -25,19 +25,19 @@ const UserProfile = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white rounded-[32px] p-4 shadow-sm border border-gray-100 overflow-hidden">
-              <Link to="/dashboard" className="flex items-center gap-3 px-6 py-4 text-gray-500 hover:text-primary hover:bg-primary-light rounded-2xl font-black text-sm transition-all mt-2">
+          {/* Sidebar Navigation - Responsive Horizontally Scrollable on Mobile */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-[24px] lg:rounded-[32px] p-2 lg:p-4 shadow-sm border border-gray-100 flex lg:flex-col gap-2 overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <Link to="/dashboard" className="flex items-center gap-3 px-5 py-3.5 lg:px-6 lg:py-4 text-gray-500 hover:text-primary hover:bg-primary-light rounded-xl lg:rounded-2xl font-black text-sm transition-all flex-shrink-0">
                 <HiOutlineViewGrid size={20} /> Overview
               </Link>
-              <Link to="/orders" className="flex items-center gap-3 px-6 py-4 text-gray-500 hover:text-primary hover:bg-primary-light rounded-2xl font-black text-sm transition-all mt-2">
+              <Link to="/orders" className="flex items-center gap-3 px-5 py-3.5 lg:px-6 lg:py-4 text-gray-500 hover:text-primary hover:bg-primary-light rounded-xl lg:rounded-2xl font-black text-sm transition-all flex-shrink-0">
                 <HiOutlineShoppingBag size={20} /> My Orders
               </Link>
-              <Link to="/profile" className="flex items-center gap-3 px-6 py-4 bg-primary text-white rounded-2xl font-black text-sm transition-all shadow-lg shadow-primary/20">
+              <Link to="/profile" className="flex items-center gap-3 px-5 py-3.5 lg:px-6 lg:py-4 bg-primary text-white rounded-xl lg:rounded-2xl font-black text-sm transition-all shadow-lg shadow-primary/20 flex-shrink-0">
                 <HiOutlineUser size={20} /> My Profile
               </Link>
-              <Link to="/settings" className="flex items-center gap-3 px-6 py-4 text-gray-500 hover:text-primary hover:bg-primary-light rounded-2xl font-black text-sm transition-all mt-2">
+              <Link to="/settings" className="flex items-center gap-3 px-5 py-3.5 lg:px-6 lg:py-4 text-gray-500 hover:text-primary hover:bg-primary-light rounded-xl lg:rounded-2xl font-black text-sm transition-all flex-shrink-0">
                 <HiOutlineCog size={20} /> Settings
               </Link>
             </div>
