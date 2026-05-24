@@ -248,7 +248,7 @@ const CheckoutPage = () => {
                           className="w-full pl-11 md:pl-12 pr-4 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
                           placeholder="House No, Street Name"
                         />
-                        <HiOutlineLocationMarker className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} className="md:size-[20px]" />
+                        <HiOutlineLocationMarker className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 md:size-[20px]" size={18} />
                       </div>
                     </div>
                     <div className="space-y-1.5 md:space-y-2">
@@ -288,7 +288,7 @@ const CheckoutPage = () => {
                         className="w-full pl-11 md:pl-12 pr-4 py-3.5 md:py-4 bg-white border border-gray-100 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700 shadow-sm text-sm md:text-base"
                         placeholder="03XX-XXXXXXX"
                       />
-                      <HiOutlinePhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} className="md:size-[20px]" />
+                      <HiOutlinePhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 md:size-[20px]" size={18} />
                     </div>
                   </div>
                 </div>

@@ -175,7 +175,7 @@ const Products = () => {
                     className="flex items-center gap-1 md:gap-2 text-blue-600 font-black text-[8px] md:text-[10px] uppercase tracking-widest group/btn"
                   >
                     Details
-                    <HiOutlineChevronRight className="group-hover/btn:translate-x-1 transition-transform" size={14} className="md:size-[16px]" />
+                    <HiOutlineChevronRight className="group-hover/btn:translate-x-1 transition-transform md:size-[16px]" size={14} />
                   </Link>
                 </div>
               </motion.div>
