@@ -176,7 +176,7 @@ const CartPage = () => {
               <div className="space-y-4">
                 <Link 
                   to="/checkout"
-                  className="w-full py-5 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all flex items-center justify-center"
+                  className="hidden md:flex w-full py-5 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all items-center justify-center"
                 >
                   Process Order
                 </Link>
