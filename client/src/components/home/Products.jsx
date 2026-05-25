@@ -119,6 +119,23 @@ const Products = () => {
                     )}
                   </div>
 
+                  {/* Floating Wishlist Button for Mobile (Always Visible) */}
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (!user) {
+                        navigate('/login', { state: { from: location.pathname } });
+                      } else {
+                        toggleWishlist(product);
+                      }
+                    }}
+                    className={`absolute top-2 right-2 p-1.5 md:hidden rounded-full shadow-md bg-white/90 backdrop-blur-sm transition-all z-20 ${
+                      isInWishlist(product._id) ? 'text-red-500' : 'text-slate-600 hover:text-red-500'
+                    }`}
+                  >
+                    {isInWishlist(product._id) ? <HiHeart size={16} /> : <HiOutlineHeart size={16} />}
+                  </button>
+
                   {/* Hover Quick Actions - Adjusted for Mobile (always visible or tap) */}
                   <div className="absolute inset-0 bg-slate-900/10 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1.5 md:gap-3">
                     <button 
@@ -166,13 +183,13 @@ const Products = () => {
                 {/* Bottom Section */}
                 <div className="pt-2 md:pt-4 border-t border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-2">
                   <div className="flex flex-col">
-                    <span className="text-base md:text-2xl font-black text-slate-900 tracking-tighter">Rs {product.price.toLocaleString()}</span>
+                    <span className="text-xs sm:text-base md:text-2xl font-black text-slate-900 tracking-tighter">Rs {product.price.toLocaleString()}</span>
                   </div>
                   
                   <Link 
                     to={`/product/${product.slug}`}
                     state={{ from: location.pathname }}
-                    className="flex items-center gap-1 md:gap-2 text-blue-600 font-black text-[8px] md:text-[10px] uppercase tracking-widest group/btn"
+                    className="flex items-center gap-1 md:gap-2 text-blue-600 font-black text-[9px] md:text-[10px] uppercase tracking-widest group/btn"
                   >
                     Details
                     <HiOutlineChevronRight className="group-hover/btn:translate-x-1 transition-transform md:size-[16px]" size={14} />

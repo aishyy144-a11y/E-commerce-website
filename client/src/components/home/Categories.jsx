@@ -92,7 +92,7 @@ const Categories = () => {
         </div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-10">
           {categories.map((cat, index) => (
             <motion.div
               key={cat.slug}
@@ -100,11 +100,11 @@ const Categories = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="group relative h-[300px] md:h-[400px]"
+              className="group relative h-[135px] sm:h-[300px] md:h-[400px]"
             >
               <Link to={`/category/${cat.slug}`} className="block h-full">
                 {/* Main Card */}
-                <div className={`relative h-full rounded-[32px] md:rounded-[48px] overflow-hidden bg-white border border-slate-100 shadow-xl md:shadow-2xl transition-all duration-700 md:group-hover:-translate-y-4 group-hover:shadow-blue-600/20`}>
+                <div className={`relative h-full rounded-[20px] sm:rounded-[32px] md:rounded-[48px] overflow-hidden bg-white border border-slate-100 shadow-xl md:shadow-2xl transition-all duration-700 md:group-hover:-translate-y-4 group-hover:shadow-blue-600/20`}>
                   {/* Background Image with Zoom and Overlay */}
                   <div className="absolute inset-0">
                     <img 
@@ -117,22 +117,22 @@ const Categories = () => {
                   </div>
 
                   {/* Content Container */}
-                  <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
+                  <div className="absolute inset-0 p-3 sm:p-6 md:p-8 flex flex-col justify-end">
                     {/* Glass Icon */}
-                    <div className="mb-3 md:mb-4 w-10 h-10 md:w-14 md:h-14 bg-white/10 backdrop-blur-xl rounded-xl md:rounded-2xl border border-white/20 flex items-center justify-center text-white group-hover:bg-blue-600 group-hover:border-blue-600 transition-all duration-500">
+                    <div className="hidden sm:flex mb-3 md:mb-4 w-10 h-10 md:w-14 md:h-14 bg-white/10 backdrop-blur-xl rounded-xl md:rounded-2xl border border-white/20 items-center justify-center text-white group-hover:bg-blue-600 group-hover:border-blue-600 transition-all duration-500">
                       <HiOutlineCube size={24} className="md:size-[32px]" />
                     </div>
 
-                    <h3 className="text-xl md:text-2xl font-black text-white mb-1 md:mb-2 group-hover:text-blue-100 transition-colors">
+                    <h3 className="text-xs sm:text-xl md:text-2xl font-black text-white mb-1 md:mb-2 group-hover:text-blue-100 transition-colors line-clamp-2">
                       {cat.name}
                     </h3>
                     <p className="hidden md:block text-slate-300 text-sm font-medium leading-relaxed mb-6 line-clamp-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                       {cat.description}
                     </p>
 
-                    <div className="flex items-center gap-2 text-white font-black text-[8px] md:text-[10px] uppercase tracking-widest group-hover:text-blue-400 transition-colors">
-                      Explore Sector
-                      <HiArrowRight size={14} className="group-hover:translate-x-2 transition-transform md:size-[16px]" />
+                    <div className="flex items-center gap-1 text-white font-black text-[8px] md:text-[10px] uppercase tracking-widest group-hover:text-blue-400 transition-colors">
+                      Explore
+                      <HiArrowRight size={10} className="group-hover:translate-x-1 transition-transform md:size-[16px]" />
                     </div>
                   </div>
                 </div>
