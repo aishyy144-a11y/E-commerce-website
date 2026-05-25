@@ -82,7 +82,7 @@ const ConditionalLayout = ({ children }) => {
 
 const Home = () => {
   return (
-    <main className="overflow-x-hidden pt-20 md:pt-32">
+    <main className="overflow-x-hidden pt-14 md:pt-32">
       <Hero />
       <StatsSection />
       <div id="categories-section">

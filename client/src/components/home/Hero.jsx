@@ -6,7 +6,7 @@ import generalImg from '../../assets/general.png';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[70vh] flex items-center pt-0 overflow-hidden bg-white">
+    <section className="relative min-h-0 lg:min-h-[70vh] flex items-center pt-0 overflow-hidden bg-white">
       {/* Background Gradients & Illustrations */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <motion.div 
@@ -32,7 +32,7 @@ const Hero = () => {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#1E40AF 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 pb-12 md:py-12 lg:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-2 pb-4 md:py-12 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           
           {/* Content Left */}
