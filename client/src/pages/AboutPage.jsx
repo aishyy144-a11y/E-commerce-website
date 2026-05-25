@@ -87,26 +87,26 @@ const AboutPage = () => {
               <p className="text-xl text-gray-500 font-medium leading-relaxed mb-6">
                 At Innovative Solutions, we are committed to providing high-quality electronic products that meet the growing demands of today’s digital world. With a strong focus on reliability, affordability, and customer satisfaction, we have established ourselves as a trusted name in the electronics market.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <div className="px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
-                  <p className="text-2xl font-black text-primary">5000+</p>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Clients</p>
+              <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-4">
+                <div className="px-2 py-3 md:px-6 md:py-4 bg-gray-50 rounded-2xl border border-gray-100 text-center md:text-left">
+                  <p className="text-lg md:text-2xl font-black text-primary">5000+</p>
+                  <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Clients</p>
                 </div>
-                <div className="px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
-                  <p className="text-2xl font-black text-primary">24/7</p>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Support</p>
+                <div className="px-2 py-3 md:px-6 md:py-4 bg-gray-50 rounded-2xl border border-gray-100 text-center md:text-left">
+                  <p className="text-lg md:text-2xl font-black text-primary">24/7</p>
+                  <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Support</p>
                 </div>
-                <div className="px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
-                  <p className="text-2xl font-black text-primary">100%</p>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Genuine</p>
+                <div className="px-2 py-3 md:px-6 md:py-4 bg-gray-50 rounded-2xl border border-gray-100 text-center md:text-left">
+                  <p className="text-lg md:text-2xl font-black text-primary">100%</p>
+                  <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Genuine</p>
                 </div>
               </div>
             </motion.div>
-
+ 
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative"
+              className="relative hidden lg:block"
             >
               <div className="relative rounded-[60px] overflow-hidden aspect-[4/5] shadow-2xl">
                 <img 

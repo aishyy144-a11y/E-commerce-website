@@ -32,7 +32,7 @@ const Hero = () => {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#1E40AF 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 lg:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 pb-12 md:py-12 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           
           {/* Content Left */}
@@ -119,7 +119,7 @@ const Hero = () => {
           </div>
 
           {/* Image/Illustration Right */}
-          <div className="relative mt-4 lg:mt-0">
+          <div className="relative mt-4 lg:mt-0 hidden lg:block">
             <motion.div
               initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}

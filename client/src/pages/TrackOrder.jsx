@@ -160,7 +160,7 @@ const TrackOrder = () => {
                         >
                           {step.icon}
                         </div>
-                        <span className={`text-[10px] md:text-xs font-black mt-3 uppercase tracking-tighter ${
+                        <span className={`text-[8px] sm:text-[10px] md:text-xs font-black mt-3 uppercase tracking-tighter text-center w-12 sm:w-20 md:w-auto break-words ${
                           idx <= currentStep ? 'text-blue-600' : 'text-slate-400'
                         }`}>
                           {step.label}

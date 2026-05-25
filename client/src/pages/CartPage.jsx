@@ -23,17 +23,17 @@ const CartPage = () => {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 pt-28 md:pt-32">
-        <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8">
-          <HiOutlineShoppingBag size={48} className="text-gray-300" />
+      <div className="min-h-[60vh] md:min-h-screen flex flex-col items-center justify-center bg-white px-4 pt-16 md:pt-32 pb-8 md:pb-0">
+        <div className="w-16 h-16 md:w-24 md:h-24 bg-gray-50 rounded-full flex items-center justify-center mb-4 md:mb-8">
+          <HiOutlineShoppingBag className="text-gray-300 size-8 md:size-12" />
         </div>
-        <h2 className="text-3xl font-black text-gray-900 mb-4">Your cart is empty</h2>
-        <p className="text-gray-500 mb-10 text-center max-w-md font-medium">
+        <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 md:mb-4">Your cart is empty</h2>
+        <p className="text-sm md:text-base text-gray-500 mb-6 md:mb-10 text-center max-w-md font-medium px-4">
           Looks like you haven't added any industrial equipment or electronics to your cart yet.
         </p>
         <Link 
           to="/shop" 
-          className="px-10 py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
+          className="px-8 py-3.5 md:px-10 md:py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all text-sm md:text-base"
         >
           Browse Inventory
         </Link>
@@ -42,8 +42,8 @@ const CartPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-20 pt-28 md:pt-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="bg-gray-50 min-h-screen pb-20 pt-16 md:pt-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
         <div className="flex items-center justify-between mb-12">
           <div>
             <h1 className="text-4xl font-black text-gray-900 mb-2">Shopping Cart</h1>
