@@ -158,8 +158,23 @@ async function getCroppedImg(imageSrc, pixelCrop) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  // Downscale image dimensions if it exceeds MAX_SIZE to ensure fast loading
+  const MAX_SIZE = 800;
+  let targetWidth = pixelCrop.width;
+  let targetHeight = pixelCrop.height;
+
+  if (targetWidth > MAX_SIZE || targetHeight > MAX_SIZE) {
+    if (targetWidth > targetHeight) {
+      targetHeight = Math.round((targetHeight * MAX_SIZE) / targetWidth);
+      targetWidth = MAX_SIZE;
+    } else {
+      targetWidth = Math.round((targetWidth * MAX_SIZE) / targetHeight);
+      targetHeight = MAX_SIZE;
+    }
+  }
+
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
 
   ctx.drawImage(
     image,
@@ -169,11 +184,12 @@ async function getCroppedImg(imageSrc, pixelCrop) {
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    targetWidth,
+    targetHeight
   );
 
-  return canvas.toDataURL('image/jpeg', 0.8);
+  // Return as WebP format with 0.7 compression ratio (highly compact and fast-loading)
+  return canvas.toDataURL('image/webp', 0.7);
 }
 
 export default ImageUploadWithCrop;

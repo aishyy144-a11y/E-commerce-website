@@ -127,7 +127,7 @@ const Hero = () => {
               className="relative z-10"
             >
               {/* Glass Card Container */}
-              <div className="relative p-2.5 md:p-8 bg-white/40 backdrop-blur-3xl rounded-[28px] md:rounded-[60px] border border-white/50 shadow-[0_32px_120px_-15px_rgba(0,0,0,0.08)] max-w-[200px] md:max-w-[400px] lg:max-w-none mx-auto">
+              <div className="relative p-2.5 md:p-8 bg-white/40 backdrop-blur-3xl rounded-[28px] md:rounded-[60px] border border-white/50 shadow-[0_32px_120px_-15px_rgba(0,0,0,0.08)] w-full max-w-[320px] sm:max-w-[400px] md:max-w-[400px] lg:max-w-none mx-auto">
                 <div className="relative rounded-[20px] md:rounded-[40px] overflow-hidden aspect-square bg-slate-100 shadow-inner group">
                   <motion.img 
                     animate={{ 
