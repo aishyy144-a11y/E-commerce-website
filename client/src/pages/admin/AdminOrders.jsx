@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../utils/api';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -529,8 +530,8 @@ const AdminOrders = () => {
       </div>
 
       {/* Manual Order Modal */}
-      {showManualModal && (
-        <div className="fixed inset-0 z-[100] bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
+      {showManualModal && createPortal(
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -879,33 +880,73 @@ const AdminOrders = () => {
               </div>
             </form>
           </motion.div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Receipt / Invoice Modal */}
-      {showReceiptModal && receiptOrder && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      {showReceiptModal && receiptOrder && createPortal(
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 print-portal-backdrop">
           <style>{`
             @media print {
-              body * {
-                visibility: hidden !important;
+              /* Hide entire main React root */
+              #root {
+                display: none !important;
               }
-              #printable-receipt-container, #printable-receipt-container * {
-                visibility: visible !important;
+              
+              /* Override backdrop wrapper styles for printing */
+              .print-portal-backdrop {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background: white !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                display: block !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                z-index: auto !important;
               }
-              #printable-receipt-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: white;
-                color: black;
-                padding: 20px;
+              
+              /* Override modal card dialog box layout */
+              .print-modal-content {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
                 border: none !important;
                 box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+                display: block !important;
+                overflow: visible !important;
               }
+              
+              /* Override scrollable wrapper height/overflow */
+              .print-scroll-wrapper {
+                overflow: visible !important;
+                height: auto !important;
+                max-height: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+              }
+              
+              /* Hide screen-only elements */
               .no-print {
                 display: none !important;
+              }
+              
+              /* Ensure the printable area has zero border, margin, and fits page */
+              #printable-receipt-container {
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                box-shadow: none !important;
               }
             }
           `}</style>
@@ -913,7 +954,7 @@ const AdminOrders = () => {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-[32px] w-full max-w-3xl shadow-2xl relative max-h-[85vh] flex flex-col border border-gray-100 overflow-hidden"
+            className="bg-white rounded-[32px] w-full max-w-3xl shadow-2xl relative max-h-[85vh] flex flex-col border border-gray-100 overflow-hidden print-modal-content"
           >
             {/* Modal Header */}
             <div className="p-8 pb-4 border-b border-gray-100 flex justify-between items-center shrink-0 no-print">
@@ -930,7 +971,7 @@ const AdminOrders = () => {
             </div>
 
             {/* Scrollable Receipt Body */}
-            <div className="p-8 pt-6 overflow-y-auto pr-6 custom-scrollbar flex-grow">
+            <div className="p-8 pt-6 overflow-y-auto pr-6 custom-scrollbar flex-grow print-scroll-wrapper">
               {/* Printable Area */}
               <div id="printable-receipt-container" className="bg-white p-6 md:p-8 border border-gray-100 rounded-2xl">
                 {/* Receipt Header */}
@@ -1076,7 +1117,8 @@ const AdminOrders = () => {
               </button>
             </div>
           </motion.div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
