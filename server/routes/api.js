@@ -933,4 +933,371 @@ router.put('/orders/:id/status', protect, admin, async (req, res) => {
   }
 });
 
+// Create manual order (Admin only)
+router.post('/orders/manual', protect, admin, async (req, res) => {
+  try {
+    const {
+      userId, // If creating for a registered customer
+      guestInfo, // If creating for a guest customer { name, email }
+      orderItems,
+      shippingAddress,
+      paymentMethod,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      status // Optional, e.g. "Confirmed" or "Pending"
+    } = req.body;
+
+    if (orderItems && orderItems.length === 0) {
+      return res.status(400).json({ message: 'No order items' });
+    }
+
+    const order = new Order({
+      user: userId || undefined,
+      guestInfo: !userId ? guestInfo : undefined,
+      orderItems,
+      shippingAddress,
+      paymentMethod,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      status: status || 'Confirmed' // Default to Confirmed for manual admin orders
+    });
+
+    const createdOrder = await order.save();
+
+    // Send email alert to admin asynchronously
+    try {
+      const User = require('../models/User');
+      const customerName = userId ? (await User.findById(userId))?.name : guestInfo?.name || 'Guest';
+      const customerEmail = userId ? (await User.findById(userId))?.email : guestInfo?.email || 'N/A';
+
+      sendEmail({
+        email: 'innovativesolutions.support.pk@gmail.com',
+        subject: `🚨 NEW MANUAL ORDER CREATED - #${createdOrder.orderNumber || createdOrder._id.toString().slice(-8).toUpperCase()}`,
+        message: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; background-color: #f8fafc; max-width: 850px; margin: auto;">
+              <div style="background-color: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                  <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-bottom: 20px;">
+                    <tr>
+                      <td align="center" valign="middle" style="background: #2563eb; width: 64px; height: 64px; border-radius: 16px; color: #ffffff; font-weight: 900; font-size: 24px;">
+                        IS
+                      </td>
+                    </tr>
+                  </table>
+                  <h1 style="margin-top: 10px; color: #0f172a; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;">New Manual Order 📝</h1>
+                  <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Created by Admin on ${new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' })}</p>
+                </div>
+
+                <div style="background: #f1f5f9; border-radius: 16px; padding: 20px; margin-bottom: 30px; display: table; width: 100%; box-sizing: border-box;">
+                  <div style="display: table-cell; vertical-align: middle;">
+                    <span style="color: #64748b; font-size: 11px; font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 4px;">Order ID</span>
+                    <span style="font-weight: 900; color: #2563eb; font-size: 18px;">#${createdOrder.orderNumber || createdOrder._id.toString().slice(-8).toUpperCase()}</span>
+                  </div>
+                  <div style="display: table-cell; vertical-align: middle; text-align: right;">
+                    <span style="color: #64748b; font-size: 11px; font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 4px;">Status</span>
+                    <span style="font-weight: 900; color: #059669; background: #ecfdf5; padding: 6px 12px; border-radius: 10px; font-size: 12px;">${createdOrder.status}</span>
+                  </div>
+                </div>
+
+                <div style="display: table; width: 100%; border-collapse: separate; border-spacing: 0 20px;">
+                  <div style="display: table-row;">
+                    <div style="display: table-cell; width: 50%; padding-right: 15px; vertical-align: top;">
+                      <h3 style="font-size: 12px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 15px; border-left: 4px solid #2563eb; padding-left: 10px;">Customer Details</h3>
+                      <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; height: 120px;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Name:</strong> ${customerName}</p>
+                        <p style="margin: 0 0 8px 0; font-size: 14px; word-break: break-all;"><strong>Email:</strong> ${customerEmail}</p>
+                        <p style="margin: 0; font-size: 14px;"><strong>Phone:</strong> ${shippingAddress.phone}</p>
+                      </div>
+                    </div>
+                    <div style="display: table-cell; width: 50%; padding-left: 15px; vertical-align: top;">
+                      <h3 style="font-size: 12px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 15px; border-left: 4px solid #2563eb; padding-left: 10px;">Shipping Address</h3>
+                      <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; height: 120px;">
+                        <p style="margin: 0; line-height: 1.6; font-size: 14px;">
+                          ${shippingAddress.address}<br />
+                          ${shippingAddress.city}, ${shippingAddress.postalCode}<br />
+                          ${shippingAddress.country}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px; margin-bottom: 30px;">
+                  <h3 style="font-size: 12px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 15px; border-left: 4px solid #2563eb; padding-left: 10px;">Inventory Details</h3>
+                  <table style="width: 100%; border-collapse: collapse; background: #ffffff;">
+                    <thead>
+                      <tr>
+                        <th style="text-align: left; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; padding: 12px 10px; border-bottom: 2px solid #f1f5f9;">Product</th>
+                        <th style="text-align: center; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; padding: 12px 10px; border-bottom: 2px solid #f1f5f9;">Qty</th>
+                        <th style="text-align: right; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; padding: 12px 10px; border-bottom: 2px solid #f1f5f9;">Unit Price</th>
+                        <th style="text-align: right; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; padding: 12px 10px; border-bottom: 2px solid #f1f5f9;">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${orderItems.map(item => `
+                        <tr>
+                          <td style="padding: 15px 10px; border-bottom: 1px solid #f1f5f9;">
+                            <div style="display: table;">
+                              <div style="display: table-cell; vertical-align: middle;">
+                                <img src="${item.image}" alt="${item.name}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0;">
+                              </div>
+                              <div style="display: table-cell; vertical-align: middle; padding-left: 12px;">
+                                <span style="font-weight: 700; color: #1e293b; font-size: 14px; display: block;">${item.name}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td style="padding: 15px 10px; text-align: center; font-weight: 800; color: #64748b; border-bottom: 1px solid #f1f5f9;">x${item.quantity}</td>
+                          <td style="padding: 15px 10px; text-align: right; font-weight: 700; color: #475569; border-bottom: 1px solid #f1f5f9;">Rs ${item.price.toLocaleString()}</td>
+                          <td style="padding: 15px 10px; text-align: right; font-weight: 900; color: #0f172a; border-bottom: 1px solid #f1f5f9;">Rs ${(item.price * item.quantity).toLocaleString()}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style="background: #0f172a; padding: 35px; border-radius: 24px; color: white;">
+                  <div style="display: table; width: 100%;">
+                    <div style="display: table-cell; width: 50%; vertical-align: top;">
+                      <span style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Payment Method</span>
+                      <span style="font-weight: 900; color: #3b82f6; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">${paymentMethod}</span>
+                    </div>
+                    <div style="display: table-cell; width: 50%; vertical-align: top;">
+                      <div style="display: table; width: 100%; border-collapse: separate; border-spacing: 0 10px;">
+                        <div style="display: table-row;">
+                          <div style="display: table-cell; text-align: left; font-size: 12px; color: #94a3b8;">Subtotal:</div>
+                          <div style="display: table-cell; text-align: right; font-weight: 700;">Rs ${itemsPrice.toLocaleString()}</div>
+                        </div>
+                        <div style="display: table-row;">
+                          <div style="display: table-cell; text-align: left; font-size: 12px; color: #94a3b8;">Shipping:</div>
+                          <div style="display: table-cell; text-align: right; font-weight: 700;">Rs ${shippingPrice.toLocaleString()}</div>
+                        </div>
+                        ${taxPrice > 0 ? `
+                        <div style="display: table-row;">
+                          <div style="display: table-cell; text-align: left; font-size: 12px; color: #94a3b8;">Tax:</div>
+                          <div style="display: table-cell; text-align: right; font-weight: 700;">Rs ${taxPrice.toLocaleString()}</div>
+                        </div>
+                        ` : ''}
+                        <div style="display: table-row;">
+                          <div style="display: table-cell; text-align: left; padding-top: 15px; border-top: 1px solid #334155; font-weight: 900; font-size: 14px; text-transform: uppercase;">Total:</div>
+                          <div style="display: table-cell; text-align: right; padding-top: 15px; border-top: 1px solid #334155; font-size: 24px; font-weight: 900; color: #3b82f6;">Rs ${totalPrice.toLocaleString()}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        `
+      });
+    } catch (e) {
+      console.error('Failed to send admin mail for manual order:', e);
+    }
+
+    res.status(201).json(createdOrder);
+  } catch (err) {
+    console.error('Manual order creation failed:', err);
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Send order receipt / invoice email (Admin only)
+router.post('/orders/:id/send-receipt', protect, admin, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('user');
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const customerEmail = order.user ? order.user.email : order.guestInfo?.email;
+    const customerName = order.user ? order.user.name : order.guestInfo?.name || 'Customer';
+
+    if (!customerEmail) {
+      return res.status(400).json({ message: 'Customer email not found on order' });
+    }
+
+    const dateStr = new Date(order.createdAt).toLocaleDateString('en-PK', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    await sendEmail({
+      email: customerEmail,
+      subject: `Invoice / Receipt for Order #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()} - Innovative Solutions`,
+      message: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            @media only screen and (max-width: 600px) {
+              .container { width: 100% !important; padding: 20px !important; }
+              .header-box { padding: 40px 20px !important; }
+              .content-box { padding: 30px 20px !important; }
+              .item-table td { font-size: 13px !important; }
+              .invoice-title { font-size: 28px !important; }
+            }
+          </style>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Helvetica, Arial, sans-serif;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td align="center" style="padding: 40px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="850" class="container" style="background-color: #ffffff; border-radius: 32px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+                  <!-- Header -->
+                  <tr>
+                    <td class="header-box" align="center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 50px 40px;">
+                      <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+                        <tr>
+                          <td align="center" valign="middle" style="background: #2563eb; width: 64px; height: 64px; border-radius: 16px; color: #ffffff; font-weight: 900; font-size: 24px;">
+                            IS
+                          </td>
+                        </tr>
+                      </table>
+                      <h1 class="invoice-title" style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
+                        ORDER INVOICE
+                      </h1>
+                      <p style="margin: 10px 0 0 0; color: #3b82f6; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
+                        Order #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Content -->
+                  <tr>
+                    <td class="content-box" style="padding: 40px;">
+                      <p style="margin: 0 0 15px 0; color: #0f172a; font-size: 18px; font-weight: 800;">Dear ${customerName},</p>
+                      <p style="margin: 0 0 30px 0; color: #475569; font-size: 15px; line-height: 1.6;">Thank you for your purchase from <b>Innovative Solutions</b>. Below is the invoice receipt for your order created on <b>${dateStr}</b>.</p>
+
+                      <!-- Info Grid -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 30px;">
+                        <tr>
+                          <td width="50%" valign="top" style="padding-right: 15px;">
+                            <h3 style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Billed To</h3>
+                            <p style="margin: 0; font-size: 14px; color: #1e293b; line-height: 1.5;">
+                              <b>Name:</b> ${customerName}<br/>
+                              <b>Email:</b> ${customerEmail}<br/>
+                              <b>Phone:</b> ${order.shippingAddress.phone}
+                            </p>
+                          </td>
+                          <td width="50%" valign="top" style="padding-left: 15px;">
+                            <h3 style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Shipping Details</h3>
+                            <p style="margin: 0; font-size: 14px; color: #1e293b; line-height: 1.5;">
+                              ${order.shippingAddress.address}<br/>
+                              ${order.shippingAddress.city}, ${order.shippingAddress.postalCode}<br/>
+                              ${order.shippingAddress.country}
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 30px;">
+                        <tr>
+                          <td>
+                            <h3 style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Payment Details</h3>
+                            <p style="margin: 0; font-size: 14px; color: #1e293b; line-height: 1.5;">
+                              <b>Method:</b> ${order.paymentMethod}<br/>
+                              <b>Status:</b> ${order.status}
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Items table -->
+                      <div style="border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+                        <table class="item-table" border="0" cellpadding="15" cellspacing="0" width="100%" style="background-color: #ffffff; border-collapse: collapse;">
+                          <thead>
+                            <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                              <th align="left" style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; width: 60%;">Product</th>
+                              <th align="center" style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase;">Qty</th>
+                              <th align="right" style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase;">Unit Price</th>
+                              <th align="right" style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase;">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${order.orderItems.map(item => `
+                              <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 15px; font-size: 14px; color: #1e293b; font-weight: 600;">
+                                  <table border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td>
+                                        <img src="${item.image}" alt="${item.name}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block; margin-right: 12px;" />
+                                      </td>
+                                      <td>
+                                        <span style="display: block;">${item.name}</span>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                                <td align="center" style="padding: 15px; font-size: 14px; color: #475569; font-weight: 700;">x${item.quantity}</td>
+                                <td align="right" style="padding: 15px; font-size: 14px; color: #475569; font-weight: 600;">Rs ${item.price.toLocaleString()}</td>
+                                <td align="right" style="padding: 15px; font-size: 14px; color: #0f172a; font-weight: 800;">Rs ${(item.price * item.quantity).toLocaleString()}</td>
+                              </tr>
+                            `).join('')}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Totals table -->
+                      <table border="0" cellpadding="0" cellspacing="0" align="right" width="300" style="margin-bottom: 40px;">
+                        <tr>
+                          <td style="padding: 6px 0; font-size: 13px; color: #64748b; font-weight: 600;">Subtotal:</td>
+                          <td align="right" style="padding: 6px 0; font-size: 13px; color: #1e293b; font-weight: 700;">Rs ${order.itemsPrice.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 0; font-size: 13px; color: #64748b; font-weight: 600;">Shipping Logistics:</td>
+                          <td align="right" style="padding: 6px 0; font-size: 13px; color: #1e293b; font-weight: 700;">
+                            ${order.shippingPrice === 0 ? 'Complimentary' : `Rs ${order.shippingPrice.toLocaleString()}`}
+                          </td>
+                        </tr>
+                        ${order.taxPrice > 0 ? `
+                        <tr>
+                          <td style="padding: 6px 0; font-size: 13px; color: #64748b; font-weight: 600;">Tax:</td>
+                          <td align="right" style="padding: 6px 0; font-size: 13px; color: #1e293b; font-weight: 700;">Rs ${order.taxPrice.toLocaleString()}</td>
+                        </tr>
+                        ` : ''}
+                        <tr style="border-top: 2px solid #e2e8f0;">
+                          <td style="padding: 15px 0 0 0; font-size: 14px; color: #0f172a; font-weight: 900; text-transform: uppercase;">Total Investment:</td>
+                          <td align="right" style="padding: 15px 0 0 0; font-size: 20px; color: #2563eb; font-weight: 900;">Rs ${order.totalPrice.toLocaleString()}</td>
+                        </tr>
+                      </table>
+
+                      <div style="clear: both;"></div>
+
+                      <!-- Support CTA -->
+                      <div style="text-align: center; margin-top: 20px; background-color: #f8fafc; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0;">
+                        <p style="margin: 0 0 15px 0; color: #475569; font-size: 14px; font-weight: 600;">If you have any questions or require support, please contact us on WhatsApp.</p>
+                        <a href="https://wa.me/923117702133" style="display: inline-block; background-color: #22c55e; color: #ffffff; padding: 15px 35px; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Chat on WhatsApp</a>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                      <p style="margin: 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Innovative Solutions - Industrial Excellence</p>
+                      <p style="margin: 8px 0 0 0; color: #cbd5e1; font-size: 10px;">This is an automated receipt. Please do not reply directly to this email address.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `
+    });
+
+    res.json({ message: 'Receipt emailed successfully' });
+  } catch (err) {
+    console.error('Failed to send order receipt email:', err);
+    res.status(500).json({ message: err.message || 'Failed to email receipt' });
+  }
+});
+
 module.exports = router;
