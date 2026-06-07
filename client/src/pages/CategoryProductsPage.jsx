@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
 import { useCart } from '../context/CartContext';
 import DroneProductSpecs from '../components/home/DroneProductSpecs';
@@ -39,10 +40,7 @@ const CategoryProductsPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [category, setCategory] = useState(null);
-  const [loading, setLoading] = useState(true);
   
   const initialFilters = {
     searchTerm: '',
@@ -58,33 +56,31 @@ const CategoryProductsPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedQuoteProduct, setSelectedQuoteProduct] = useState(null);
 
-  useEffect(() => {
-    const fetchCategoryAndProducts = async () => {
-      try {
-        setLoading(true);
-        // Fetch all categories to find the current one by slug
-        const catRes = await api.get('/api/categories');
-        const currentCat = catRes.data.find(c => c.slug === slug);
-        if (currentCat) {
-          setCategory(currentCat);
-        }
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const response = await api.get('/api/categories');
+      return response.data;
+    },
+  });
 
-        const response = await api.get(`/api/products/category/${slug}`);
-        setProducts(response.data);
-        setFilteredProducts(response.data);
-      } catch (err) {
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategoryAndProducts();
-  }, [slug]);
+  const { data: products = [], isLoading: loading } = useQuery({
+    queryKey: ['category-products', slug],
+    queryFn: async () => {
+      const response = await api.get(`/api/products/category/${slug}`);
+      return response.data;
+    },
+  });
+
+  const category = useMemo(
+    () => categories.find((c) => c.slug === slug) || null,
+    [categories, slug]
+  );
 
   useEffect(() => {
     let result = products.filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                            p.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
+                            p.description?.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const matchesPrice = p.price <= filters.priceRange;
       const matchesStock = !filters.inStockOnly || p.stock > 0;
       

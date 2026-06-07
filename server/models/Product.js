@@ -20,5 +20,6 @@ const productSchema = new mongoose.Schema({
 // Add indexes for faster search
 productSchema.index({ name: 'text', modelNumber: 'text', brand: 'text', description: 'text' });
 productSchema.index({ category: 1 });
+productSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.models.Product || mongoose.model('Product', productSchema);

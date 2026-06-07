@@ -70,8 +70,9 @@ const Navbar = () => {
                 <HiOutlineLightBulb className="text-white text-2xl md:text-3xl" />
               </div>
               <div className="hidden md:flex flex-col">
-                <span className="text-lg md:text-xl font-black text-gray-900 tracking-tighter leading-none uppercase">Innovative</span>
-                <span className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-[0.3em]">Solutions</span>
+                <span className="text-lg md:text-xl font-black text-gray-900 tracking-tighter leading-none uppercase">
+                  Innovative <span className="text-primary">Solutions</span>
+                </span>
               </div>
             </Link>
 

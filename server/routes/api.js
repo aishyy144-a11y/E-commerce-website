@@ -10,7 +10,132 @@ const { protect, optionalProtect, admin } = require('../middleware/auth');
 const nodemailer = require('nodemailer');
 const authRoutes = require('./auth');
 const sendEmail = require('../utils/sendEmail');
+const cache = require('../utils/cache');
+const { toCardProduct, toCardProducts, mapSpecs } = require('../utils/productTransform');
 console.log('Mounting auth routes in api.js');
+
+const QUOTE_PRICE_THRESHOLD = 50000;
+
+const applyQuotePricingRule = (data) => {
+  const price = parseFloat(data.price);
+  if (!Number.isNaN(price) && price >= QUOTE_PRICE_THRESHOLD) {
+    data.requiresQuote = true;
+  }
+  return data;
+};
+
+const sendInquiryEmails = async (inquiryId) => {
+  try {
+    const savedInquiry = await Inquiry.findById(inquiryId)
+      .populate('product', 'name modelNumber brand slug price description')
+      .populate('products', 'name modelNumber brand slug price description')
+      .lean();
+
+    if (!savedInquiry) return;
+
+    const isQuote = savedInquiry.product || (savedInquiry.products && savedInquiry.products.length > 0);
+    let productInfo = '';
+    if (savedInquiry.products && savedInquiry.products.length > 0) {
+      productInfo = `<div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Requested Products:</h3>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6;">
+            ${savedInquiry.products.map(p => `<li><strong>${p.name}</strong> (Model: ${p.modelNumber || 'N/A'} - Brand: ${p.brand || 'N/A'})</li>`).join('')}
+          </ul>
+        </div>`;
+    } else if (savedInquiry.product) {
+      productInfo = `<div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Product Details:</h3>
+          <p><strong>Product:</strong> ${savedInquiry.product.name}</p>
+          <p><strong>Model:</strong> ${savedInquiry.product.modelNumber}</p>
+          <p><strong>Brand:</strong> ${savedInquiry.product.brand}</p>
+        </div>`;
+    } else {
+      productInfo = `<div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">General Inquiry:</h3>
+          <p><strong>Subject:</strong> ${savedInquiry.subject || 'No Subject'}</p>
+        </div>`;
+    }
+
+    sendEmail({
+      email: process.env.ADMIN_EMAIL || 'innovativesolutions.support.pk@gmail.com',
+      subject: `New ${isQuote ? 'Quotation' : 'General'} Request - ${savedInquiry.name}`,
+      message: `
+        <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 12px;">
+          <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px; text-align: center;">New Inquiry Received</h2>
+          ${productInfo}
+          <div style="background: #fff; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Customer Information:</h3>
+            <p><strong>Name:</strong> ${savedInquiry.name}</p>
+            <p><strong>Email:</strong> ${savedInquiry.email}</p>
+            <p><strong>Phone:</strong> ${savedInquiry.phone}</p>
+            <p><strong>Company:</strong> ${savedInquiry.company || 'N/A'}</p>
+            ${savedInquiry.quantity ? `<p><strong>Requested Qty:</strong> ${savedInquiry.quantity}</p>` : ''}
+          </div>
+          <h3 style="color: #475569; font-size: 16px;">Customer Message:</h3>
+          <p style="background: #f1f5f9; border-left: 4px solid #2563eb; padding: 15px; font-style: italic; border-radius: 4px;">${savedInquiry.message}</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+          <div style="text-align: center;">
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/admin/quotations" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">View in Dashboard</a>
+          </div>
+        </div>
+      `
+    }).catch(emailErr => console.error('Admin Inquiry email notification failed:', emailErr));
+
+    let userProductInfo = '';
+    if (savedInquiry.products && savedInquiry.products.length > 0) {
+      userProductInfo = `<div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #e2e8f0;">
+          <h3 style="margin-top: 0; color: #1e293b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry Summary:</h3>
+          <p style="margin: 5px 0;"><strong>Requested Products:</strong></p>
+          <ul style="padding-left: 20px; margin: 5px 0;">
+            ${savedInquiry.products.map(p => `<li>${p.name}</li>`).join('')}
+          </ul>
+          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">Pending Review</span></p>
+        </div>`;
+    } else if (savedInquiry.product) {
+      userProductInfo = `<div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #e2e8f0;">
+          <h3 style="margin-top: 0; color: #1e293b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry Summary:</h3>
+          <p style="margin: 5px 0;"><strong>Product:</strong> ${savedInquiry.product.name}</p>
+          <p style="margin: 5px 0;"><strong>Quantity:</strong> ${savedInquiry.quantity}</p>
+          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">Pending Review</span></p>
+        </div>`;
+    } else {
+      userProductInfo = `<div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #e2e8f0;">
+          <h3 style="margin-top: 0; color: #1e293b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry Summary:</h3>
+          <p style="margin: 5px 0;"><strong>Subject:</strong> ${savedInquiry.subject || 'General Support'}</p>
+          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">Pending Review</span></p>
+        </div>`;
+    }
+
+    sendEmail({
+      email: savedInquiry.email,
+      subject: 'Inquiry Received - Innovative Solutions',
+      message: `
+        <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: auto; border: 1px solid #e2e8f0; border-radius: 24px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-bottom: 20px;">
+              <tr>
+                <td align="center" valign="middle" style="background: #2563eb; width: 64px; height: 64px; border-radius: 16px; color: #ffffff; font-weight: 900; font-size: 24px;">IS</td>
+              </tr>
+            </table>
+            <h2 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: 800;">Thank You for Reaching Out!</h2>
+          </div>
+          <p style="font-size: 16px; line-height: 1.6;">Dear <strong>${savedInquiry.name}</strong>,</p>
+          <p style="font-size: 16px; line-height: 1.6; color: #475569;">We have received your ${isQuote ? 'quotation request' : 'message'}. Our technical team is reviewing your requirements and will contact you shortly.</p>
+          ${userProductInfo}
+          <div style="background: #f1f5f9; padding: 20px; border-radius: 16px; text-align: center; margin-top: 30px;">
+            <p style="margin: 0; color: #64748b; font-size: 14px;">Need an immediate response?</p>
+            <a href="https://wa.me/923117702133" style="display: inline-block; margin-top: 10px; color: #2563eb; font-weight: 800; text-decoration: none; font-size: 16px;">Chat on WhatsApp 0311-7702133</a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 40px 0;" />
+          <p style="font-size: 12px; color: #94a3b8; text-align: center;">This is an automated confirmation. Please do not reply to this email directly.</p>
+          <p style="font-size: 12px; color: #2563eb; text-align: center; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Innovative Solutions - Industrial Excellence</p>
+        </div>
+      `
+    }).catch(userEmailErr => console.error('User Inquiry confirmation email failed:', userEmailErr));
+  } catch (err) {
+    console.error('Background inquiry email error:', err);
+  }
+};
 
 // Auth routes
 router.use('/auth', authRoutes);
@@ -18,7 +143,15 @@ router.use('/auth', authRoutes);
 // Get all categories
 router.get('/categories', async (req, res) => {
   try {
-    const categories = await Category.find();
+    const cacheKey = 'categories:all';
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const categories = await Category.find()
+      .select('name slug description image iconName')
+      .sort({ name: 1 })
+      .lean();
+    cache.set(cacheKey, categories, 300);
     res.json(categories);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -29,13 +162,46 @@ router.get('/categories', async (req, res) => {
 router.get('/products/all', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 0;
-    // Optimize: Select only necessary fields for product cards
-    const products = await Product.find()
-      .select('name slug modelNumber brand price category images specifications requiresQuote stock createdAt')
+    const fields = req.query.fields || (limit > 0 ? 'card' : 'shop');
+    const cacheKey = `products:all:${limit}:${fields}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const selectFields = fields === 'shop'
+      ? 'name slug modelNumber brand price category images specifications requiresQuote stock createdAt description'
+      : 'name slug modelNumber brand price category images requiresQuote stock createdAt';
+
+    let query = Product.find()
+      .select(selectFields)
       .populate('category', 'name slug')
       .sort({ createdAt: -1 })
-      .limit(limit);
-    res.json(products);
+      .lean();
+
+    if (limit > 0) query = query.limit(limit);
+
+    const products = await query;
+    const payload = toCardProducts(products, {
+      includeDescription: fields === 'shop',
+      includeSpecs: fields === 'shop',
+    });
+    cache.set(cacheKey, payload, 120);
+    res.json(payload);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get single product by ID (Admin edit — full data)
+router.get('/products/admin/:id', protect, admin, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .populate('category', 'name slug')
+      .lean();
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (product.specifications instanceof Map) {
+      product.specifications = mapSpecs(product.specifications);
+    }
+    res.json(product);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -44,8 +210,9 @@ router.get('/products/all', async (req, res) => {
 // Create Product
 router.post('/products', protect, admin, async (req, res) => {
   try {
-    const product = new Product(req.body);
+    const product = new Product(applyQuotePricingRule({ ...req.body }));
     const newProduct = await product.save();
+    cache.invalidatePrefix('products:');
     res.status(201).json(newProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -55,7 +222,12 @@ router.post('/products', protect, admin, async (req, res) => {
 // Update Product
 router.put('/products/:id', protect, admin, async (req, res) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      applyQuotePricingRule({ ...req.body }),
+      { new: true }
+    );
+    cache.invalidatePrefix('products:');
     res.json(updatedProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -66,6 +238,7 @@ router.put('/products/:id', protect, admin, async (req, res) => {
 router.delete('/products/:id', protect, admin, async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
+    cache.invalidatePrefix('products:');
     res.json({ message: 'Product deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -77,6 +250,7 @@ router.post('/products/bulk', protect, admin, async (req, res) => {
   try {
     const products = req.body; // Expecting an array of products
     const newProducts = await Product.insertMany(products);
+    cache.invalidatePrefix('products:');
     res.status(201).json(newProducts);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -88,6 +262,7 @@ router.post('/categories', protect, admin, async (req, res) => {
   try {
     const category = new Category(req.body);
     const newCategory = await category.save();
+    cache.del('categories:all');
     res.status(201).json(newCategory);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -97,6 +272,7 @@ router.post('/categories', protect, admin, async (req, res) => {
 router.put('/categories/:id', protect, admin, async (req, res) => {
   try {
     const updatedCategory = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    cache.del('categories:all');
     res.json(updatedCategory);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -106,6 +282,8 @@ router.put('/categories/:id', protect, admin, async (req, res) => {
 router.delete('/categories/:id', protect, admin, async (req, res) => {
   try {
     await Category.findByIdAndDelete(req.params.id);
+    cache.del('categories:all');
+    cache.invalidatePrefix('products:');
     res.json({ message: 'Category deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -126,7 +304,7 @@ router.get('/products/search', async (req, res) => {
         { name: searchRegex },
         { slug: searchRegex }
       ]
-    }).select('_id');
+    }).select('_id').lean();
     const categoryIds = matchedCategories.map(cat => cat._id);
 
     // 2. Search in products (including matched category IDs)
@@ -140,11 +318,31 @@ router.get('/products/search', async (req, res) => {
         { category: { $in: categoryIds } }
       ]
     })
-    .select('name slug modelNumber brand price category images specifications requiresQuote stock')
+    .select('name slug modelNumber brand price category images specifications requiresQuote stock description')
     .populate('category', 'name slug')
-    .limit(20);
+    .limit(20)
+    .lean();
 
-    res.json(products);
+    res.json(toCardProducts(products, { includeDescription: true, includeSpecs: true }));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get products by category ID (for admin order picker)
+router.get('/products/category-id/:id', protect, admin, async (req, res) => {
+  try {
+    const cacheKey = `products:category:${req.params.id}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const products = await Product.find({ category: req.params.id })
+      .select('name slug price stock modelNumber brand images')
+      .sort({ name: 1 })
+      .lean();
+    const payload = toCardProducts(products);
+    cache.set(cacheKey, payload, 120);
+    res.json(payload);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -153,14 +351,46 @@ router.get('/products/search', async (req, res) => {
 // Get products by category slug
 router.get('/products/category/:slug', async (req, res) => {
   try {
-    const category = await Category.findOne({ slug: req.params.slug }).select('_id name slug');
+    const cacheKey = `products:slug:${req.params.slug}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const category = await Category.findOne({ slug: req.params.slug }).select('_id name slug').lean();
     if (!category) return res.status(404).json({ message: 'Category not found' });
     
-    // Optimize: Select only necessary fields
     const products = await Product.find({ category: category._id })
-      .select('name slug modelNumber brand price category images specifications requiresQuote stock subCategory createdAt')
-      .populate('category', 'name slug');
-    res.json(products);
+      .select('name slug modelNumber brand price category images specifications requiresQuote stock subCategory createdAt description')
+      .populate('category', 'name slug')
+      .lean();
+    const payload = toCardProducts(products, { includeDescription: true, includeSpecs: true });
+    cache.set(cacheKey, payload, 120);
+    res.json(payload);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Related products for product detail page
+router.get('/products/:slug/related', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 4;
+    const cacheKey = `products:related:${req.params.slug}:${limit}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const product = await Product.findOne({ slug: req.params.slug }).select('category').lean();
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    const related = await Product.find({ category: product.category, _id: { $ne: product._id } })
+      .select('name slug modelNumber brand price category images requiresQuote stock')
+      .populate('category', 'name slug')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const payload = toCardProducts(related);
+    cache.set(cacheKey, payload, 120);
+    res.json(payload);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -169,10 +399,18 @@ router.get('/products/category/:slug', async (req, res) => {
 // Get single product by slug
 router.get('/products/:slug', async (req, res) => {
   try {
+    const cacheKey = `products:detail:${req.params.slug}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
     const product = await Product.findOne({ slug: req.params.slug })
-      .populate('category')
-      .populate('accessories');
+      .populate('category', 'name slug description image iconName')
+      .lean();
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (product.specifications instanceof Map) {
+      product.specifications = mapSpecs(product.specifications);
+    }
+    cache.set(cacheKey, product, 120);
     res.json(product);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -185,106 +423,12 @@ router.get('/products/:slug', async (req, res) => {
 router.post('/inquiries', async (req, res) => {
   try {
     const inquiry = new Inquiry(req.body);
-    const savedInquiry = await (await inquiry.save()).populate('product', 'name modelNumber brand slug');
+    const savedInquiry = await inquiry.save();
 
-    // 1. Send email notification to ADMIN
-    try {
-      const productInfo = savedInquiry.product 
-        ? `<div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Product Details:</h3>
-            <p><strong>Product:</strong> ${savedInquiry.product.name}</p>
-            <p><strong>Model:</strong> ${savedInquiry.product.modelNumber}</p>
-            <p><strong>Brand:</strong> ${savedInquiry.product.brand}</p>
-          </div>`
-        : `<div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">General Inquiry:</h3>
-            <p><strong>Subject:</strong> ${savedInquiry.subject || 'No Subject'}</p>
-          </div>`;
-
-      await sendEmail({
-        email: process.env.ADMIN_EMAIL || 'innovativesolutions.support.pk@gmail.com',
-        subject: `New ${savedInquiry.product ? 'Quotation' : 'General'} Request - ${savedInquiry.name}`,
-        message: `
-          <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 12px;">
-            <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px; text-align: center;">New Inquiry Received</h2>
-            
-            ${productInfo}
-
-            <div style="background: #fff; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Customer Information:</h3>
-              <p><strong>Name:</strong> ${savedInquiry.name}</p>
-              <p><strong>Email:</strong> ${savedInquiry.email}</p>
-              <p><strong>Phone:</strong> ${savedInquiry.phone}</p>
-              <p><strong>Company:</strong> ${savedInquiry.company || 'N/A'}</p>
-              ${savedInquiry.quantity ? `<p><strong>Requested Qty:</strong> ${savedInquiry.quantity}</p>` : ''}
-            </div>
-
-            <h3 style="color: #475569; font-size: 16px;">Customer Message:</h3>
-            <p style="background: #f1f5f9; border-left: 4px solid #2563eb; padding: 15px; font-style: italic; border-radius: 4px;">${savedInquiry.message}</p>
-            
-            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-            <div style="text-align: center;">
-              <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/admin/quotations" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">View in Dashboard</a>
-            </div>
-          </div>
-        `
-      });
-    } catch (emailErr) {
-      console.error('Admin Inquiry email notification failed:', emailErr);
-    }
-
-    // 2. Send confirmation email to USER
-    try {
-      const userProductInfo = savedInquiry.product 
-        ? `<div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #e2e8f0;">
-            <h3 style="margin-top: 0; color: #1e293b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry Summary:</h3>
-            <p style="margin: 5px 0;"><strong>Product:</strong> ${savedInquiry.product.name}</p>
-            <p style="margin: 5px 0;"><strong>Quantity:</strong> ${savedInquiry.quantity}</p>
-            <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">Pending Review</span></p>
-          </div>`
-        : `<div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #e2e8f0;">
-            <h3 style="margin-top: 0; color: #1e293b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Inquiry Summary:</h3>
-            <p style="margin: 5px 0;"><strong>Subject:</strong> ${savedInquiry.subject || 'General Support'}</p>
-            <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">Pending Review</span></p>
-          </div>`;
-
-      await sendEmail({
-        email: savedInquiry.email,
-        subject: `Inquiry Received - Innovative Solutions`,
-        message: `
-          <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: auto; border: 1px solid #e2e8f0; border-radius: 24px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-bottom: 20px;">
-                <tr>
-                  <td align="center" valign="middle" style="background: #2563eb; width: 64px; height: 64px; border-radius: 16px; color: #ffffff; font-weight: 900; font-size: 24px;">
-                    IS
-                  </td>
-                </tr>
-              </table>
-              <h2 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: 800;">Thank You for Reaching Out!</h2>
-            </div>
-            
-            <p style="font-size: 16px; line-height: 1.6;">Dear <strong>${savedInquiry.name}</strong>,</p>
-            <p style="font-size: 16px; line-height: 1.6; color: #475569;">We have received your ${savedInquiry.product ? 'quotation request' : 'message'}. Our technical team is reviewing your requirements and will contact you shortly. 📩</p>
-            
-            ${userProductInfo}
-
-            <div style="background: #f1f5f9; padding: 20px; border-radius: 16px; text-align: center; margin-top: 30px;">
-              <p style="margin: 0; color: #64748b; font-size: 14px;">Need an immediate response?</p>
-              <a href="https://wa.me/923117702133" style="display: inline-block; margin-top: 10px; color: #2563eb; font-weight: 800; text-decoration: none; font-size: 16px;">Chat on WhatsApp 0311-7702133</a>
-            </div>
-            
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 40px 0;" />
-            <p style="font-size: 12px; color: #94a3b8; text-align: center;">This is an automated confirmation. Please do not reply to this email directly.</p>
-            <p style="font-size: 12px; color: #2563eb; text-align: center; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Innovative Solutions - Industrial Excellence</p>
-          </div>
-        `
-      });
-    } catch (userEmailErr) {
-      console.error('User Inquiry confirmation email failed:', userEmailErr);
-    }
-
+    cache.del('admin:inquiries:all');
     res.status(201).json(savedInquiry);
+
+    setImmediate(() => sendInquiryEmails(savedInquiry._id));
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -293,10 +437,17 @@ router.post('/inquiries', async (req, res) => {
 // Get all inquiries (Admin only)
 router.get('/inquiries', protect, admin, async (req, res) => {
   try {
+    const cacheKey = 'admin:inquiries:all';
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
     const inquiries = await Inquiry.find()
-      .populate('product', 'name modelNumber brand slug')
+      .populate('product', 'name modelNumber brand slug price description')
+      .populate('products', 'name modelNumber brand slug price description')
       .populate('user', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+    cache.set(cacheKey, inquiries, 60);
     res.json(inquiries);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -310,7 +461,9 @@ router.put('/inquiries/:id', protect, admin, async (req, res) => {
       req.params.id,
       req.body,
       { new: true }
-    ).populate('product', 'name modelNumber brand slug');
+    ).populate('product', 'name modelNumber brand slug')
+     .populate('products', 'name modelNumber brand slug price description');
+    cache.del('admin:inquiries:all');
     res.json(updatedInquiry);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -321,67 +474,111 @@ router.put('/inquiries/:id', protect, admin, async (req, res) => {
 router.delete('/inquiries/:id', protect, admin, async (req, res) => {
   try {
     await Inquiry.findByIdAndDelete(req.params.id);
+    cache.del('admin:inquiries:all');
     res.json({ message: 'Inquiry deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+// Update inquiry status only (Admin only) - matches client request to /api/inquiries/:id/status
+router.put('/inquiries/:id/status', protect, admin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ message: 'Status is required' });
+    
+    const updatedInquiry = await Inquiry.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    ).populate('product', 'name modelNumber brand slug')
+     .populate('products', 'name modelNumber brand slug price description');
+    
+    if (!updatedInquiry) return res.status(404).json({ message: 'Inquiry not found' });
+    cache.del('admin:inquiries:all');
+    res.json(updatedInquiry);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Send quotation email to client (Admin only)
+router.post('/inquiries/send-quotation-email', protect, admin, async (req, res) => {
+  try {
+    const { email, subject, htmlContent } = req.body;
+    
+    if (!email || !subject || !htmlContent) {
+      return res.status(400).json({ message: 'Email, subject, and htmlContent are required' });
+    }
+
+    await sendEmail({
+      email,
+      subject,
+      message: htmlContent
+    });
+
+    res.json({ message: 'Quotation email sent successfully!' });
+  } catch (err) {
+    console.error('Error sending quotation email:', err);
+    res.status(500).json({ message: err.message || 'Failed to send email' });
+  }
+});
+
+
 // --- Newsletter Routes ---
 
 // Subscribe to newsletter
 router.post('/newsletter/subscribe', async (req, res) => {
-  console.log('Newsletter subscription attempt:', req.body.email);
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required' });
 
-    const existing = await Subscriber.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = await Subscriber.findOne({ email: normalizedEmail }).lean();
+
+    if (existing?.status === 'active') {
+      return res.status(400).json({ message: 'You are already subscribed!' });
+    }
+
     if (existing) {
-      if (existing.status === 'active') {
-        return res.status(400).json({ message: 'You are already subscribed!' });
-      } else {
-        existing.status = 'active';
-        await existing.save();
-        return res.json({ message: 'Welcome back! Your subscription is active again.' });
-      }
+      await Subscriber.findByIdAndUpdate(existing._id, { status: 'active' });
+      res.json({ message: 'Welcome back! Your subscription is active again.' });
+    } else {
+      await Subscriber.create({ email: normalizedEmail });
+      res.status(201).json({ message: 'Successfully subscribed to newsletter!' });
     }
 
-    const subscriber = new Subscriber({ email });
-    await subscriber.save();
-
-    // Send welcome email
-    try {
-      await sendEmail({
-        email: email,
-        subject: 'Welcome to Innovative Solutions Newsletter',
-        message: `
-          <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: auto; border: 1px solid #e2e8f0; border-radius: 24px; background-color: #ffffff; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-bottom: 20px;">
-              <tr>
-                <td align="center" valign="middle" style="background: #2563eb; width: 64px; height: 64px; border-radius: 16px; color: #ffffff; font-weight: 900; font-size: 24px;">
-                  IS
-                </td>
-              </tr>
-            </table>
-            <h2 style="color: #2563eb; font-size: 24px; font-weight: 800; margin: 0 0 15px 0;">Thanks for Subscribing! 🎉</h2>
-            <p style="font-size: 16px; line-height: 1.6; color: #475569;">You'll now receive our latest industrial updates, technical insights, and exclusive enterprise offers directly in your inbox.</p>
-            <div style="margin: 30px 0; padding: 25px; background: #f1f5f9; border-radius: 20px;">
-              <p style="margin: 0; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Stay Connected</p>
-              <div style="margin-top: 15px;">
-                <a href="https://www.instagram.com/innovativesolutions_official" style="display: inline-block; background: #E1306C; color: #ffffff; padding: 10px 20px; border-radius: 12px; font-weight: 800; text-decoration: none; font-size: 14px;">Follow on Instagram</a>
-              </div>
+    // Send welcome email in background
+    sendEmail({
+      email: normalizedEmail,
+      subject: 'Welcome to Innovative Solutions Newsletter',
+      message: `
+        <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: auto; border: 1px solid #e2e8f0; border-radius: 24px; background-color: #ffffff; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-bottom: 20px;">
+            <tr>
+              <td align="center" valign="middle" style="background: #2563eb; width: 64px; height: 64px; border-radius: 16px; color: #ffffff; font-weight: 900; font-size: 24px;">
+                IS
+              </td>
+            </tr>
+          </table>
+          <h2 style="color: #2563eb; font-size: 24px; font-weight: 800; margin: 0 0 15px 0;">Thanks for Subscribing! 🎉</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #475569;">You'll now receive our latest industrial updates, technical insights, and exclusive enterprise offers directly in your inbox.</p>
+          <div style="margin: 30px 0; padding: 25px; background: #f1f5f9; border-radius: 20px;">
+            <p style="margin: 0; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Stay Connected</p>
+            <div style="margin-top: 15px;">
+              <a href="https://www.instagram.com/innovativesolutions_official" style="display: inline-block; background: #E1306C; color: #ffffff; padding: 10px 20px; border-radius: 12px; font-weight: 800; text-decoration: none; font-size: 14px;">Follow on Instagram</a>
             </div>
-            <p style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Innovative Solutions - Industrial Excellence</p>
           </div>
-        `
-      });
-    } catch (e) {
+          <p style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Innovative Solutions - Industrial Excellence</p>
+        </div>
+      `
+    }).catch(e => {
       console.error('Welcome email failed:', e);
-    }
-
-    res.status(201).json({ message: 'Successfully subscribed to newsletter!' });
+    });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'You are already subscribed!' });
+    }
     res.status(500).json({ message: err.message });
   }
 });
@@ -683,6 +880,7 @@ router.post('/orders', optionalProtect, async (req, res) => {
       console.error('Email notification failed:', emailErr);
     });
 
+    cache.del('admin:orders:all');
     res.status(201).json(createdOrder);
   } catch (err) {
     console.error('Order creation error:', err);
@@ -777,7 +975,16 @@ router.get('/orders/track/:query', async (req, res) => {
 // Get all orders (Admin only)
 router.get('/orders', protect, admin, async (req, res) => {
   try {
-    const orders = await Order.find({}).populate('user', 'id name').sort({ createdAt: -1 });
+    const cacheKey = 'admin:orders:all';
+    const cached = cache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const orders = await Order.find({})
+      .select('orderNumber status totalPrice itemsPrice shippingPrice taxPrice paymentMethod createdAt guestInfo shippingAddress orderItems user isPaid isDelivered trackingId')
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
+    cache.set(cacheKey, orders, 60);
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -927,6 +1134,7 @@ router.put('/orders/:id/status', protect, admin, async (req, res) => {
       }
     }
 
+    cache.del('admin:orders:all');
     res.json(updatedOrder);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -1097,6 +1305,7 @@ router.post('/orders/manual', protect, admin, async (req, res) => {
       console.error('Failed to send admin mail for manual order:', e);
     }
 
+    cache.del('admin:orders:all');
     res.status(201).json(createdOrder);
   } catch (err) {
     console.error('Manual order creation failed:', err);

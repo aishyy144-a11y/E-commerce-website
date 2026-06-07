@@ -20,7 +20,7 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
       try {
         const [prodRes, catRes] = await Promise.all([
-          api.get('/api/products/all'),
+          api.get('/api/products/all?fields=card'),
           api.get('/api/categories')
         ]);
         

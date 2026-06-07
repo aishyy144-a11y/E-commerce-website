@@ -68,12 +68,7 @@ const Categories = () => {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-6xl font-black text-slate-900 leading-tight"
             >
-              Solutions by <span className="text-blue-600 italic relative">
-                Category
-                <svg className="absolute -bottom-1 md:-bottom-2 left-0 w-full" viewBox="0 0 100 10" preserveAspectRatio="none">
-                  <path d="M0 5 Q 25 0 50 5 T 100 5" fill="none" stroke="#DBEAFE" strokeWidth="4" />
-                </svg>
-              </span>
+              Solutions by <span className="text-blue-600 italic">Category</span>
             </motion.h2>
           </div>
           <motion.div

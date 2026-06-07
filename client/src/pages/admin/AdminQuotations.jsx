@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../utils/api';
-import axios from 'axios';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   HiOutlineChatAlt, 
@@ -12,36 +13,32 @@ import {
   HiOutlinePhone,
   HiOutlineUser,
   HiOutlineOfficeBuilding,
-  HiOutlineExternalLink
+  HiOutlineExternalLink,
+  HiOutlineDocumentText
 } from 'react-icons/hi';
 import { toast } from 'react-toastify';
+import GenerateQuotationModal from '../../components/admin/GenerateQuotationModal';
+
 
 const AdminQuotations = () => {
-  const [inquiries, setInquiries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [selectedInquiry, setSelectedInquiry] = useState(null);
+  const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchInquiries();
-  }, []);
-
-  const fetchInquiries = async () => {
-      try {
-        const response = await api.get('/api/inquiries');
-      setInquiries(response.data);
-    } catch (err) {
-      console.error('Error fetching inquiries:', err);
-      toast.error('Failed to load quotation requests');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: inquiries = [], isLoading: loading } = useQuery({
+    queryKey: ['admin-inquiries'],
+    queryFn: async () => {
+      const response = await api.get('/api/inquiries');
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
 
   const updateStatus = async (id, status) => {
     try {
       await api.put(`/api/inquiries/${id}/status`, { status });
       toast.success('Status updated');
-      fetchInquiries();
+      queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
     } catch (err) {
       toast.error('Update failed');
     }
@@ -52,11 +49,25 @@ const AdminQuotations = () => {
     try {
       await api.delete(`/api/inquiries/${id}`);
       toast.success('Inquiry deleted');
-      fetchInquiries();
+      queryClient.invalidateQueries({ queryKey: ['admin-inquiries'] });
       setSelectedInquiry(null);
     } catch (err) {
       toast.error('Failed to delete inquiry');
     }
+  };
+
+  const getInquiryTitle = (inquiry) => {
+    if (inquiry.products?.length > 0) {
+      return inquiry.products.length === 1
+        ? inquiry.products[0].name
+        : `${inquiry.products.length} Products Quotation`;
+    }
+    if (inquiry.product) return inquiry.product.name;
+    return inquiry.subject || 'General Inquiry';
+  };
+
+  const isQuotationRequest = (inquiry) => {
+    return inquiry.product || (inquiry.products && inquiry.products.length > 0);
   };
 
   const getStatusColor = (status) => {
@@ -113,18 +124,16 @@ const AdminQuotations = () => {
                     </div>
                     <div>
                       <h3 className="font-black text-gray-900 line-clamp-1">
-                        {inquiry.product ? inquiry.product.name : (inquiry.subject || 'General Inquiry')}
+                        {getInquiryTitle(inquiry)}
                       </h3>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{inquiry.name}</span>
                         <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(inquiry.createdAt).toLocaleDateString()}</span>
-                        {inquiry.subject && !inquiry.product && (
-                          <>
-                            <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Contact Form</span>
-                          </>
-                        )}
+                        <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isQuotationRequest(inquiry) ? 'text-amber-500' : 'text-primary'}`}>
+                          {isQuotationRequest(inquiry) ? 'Quotation' : 'General Query'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -158,12 +167,12 @@ const AdminQuotations = () => {
                     </button>
                   </div>
                   <h2 className="text-2xl font-black text-gray-900 leading-tight mb-2">
-                    {selectedInquiry.product ? selectedInquiry.product.name : (selectedInquiry.subject || 'General Inquiry')}
+                    {getInquiryTitle(selectedInquiry)}
                   </h2>
-                  {selectedInquiry.product ? (
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model: {selectedInquiry.product.modelNumber}</p>
+                  {isQuotationRequest(selectedInquiry) ? (
+                    <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Quotation Request</p>
                   ) : (
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest">General Inquiry from Contact Page</p>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest">General Query from Contact Page</p>
                   )}
                 </div>
 
@@ -184,7 +193,7 @@ const AdminQuotations = () => {
                         <HiOutlinePhone className="text-primary" size={20} />
                         {selectedInquiry.phone}
                       </div>
-                      {selectedInquiry.company && selectedInquiry.product && (
+                      {selectedInquiry.company && (
                         <div className="flex items-center gap-3 text-sm font-bold text-gray-700">
                           <HiOutlineOfficeBuilding className="text-primary" size={20} />
                           {selectedInquiry.company}
@@ -192,6 +201,35 @@ const AdminQuotations = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Requested Products */}
+                  {selectedInquiry.product && !selectedInquiry.products?.length && (
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">Requested Product</h4>
+                      <div className="bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                        <p className="font-black text-gray-900 text-sm">{selectedInquiry.product.name}</p>
+                        <p className="text-[10px] text-gray-500 font-bold mt-1">
+                          {selectedInquiry.product.brand} {selectedInquiry.product.modelNumber ? `• ${selectedInquiry.product.modelNumber}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedInquiry.products?.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">Requested Products</h4>
+                      <div className="space-y-2">
+                        {selectedInquiry.products.map(p => (
+                          <div key={p._id} className="bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                            <p className="font-black text-gray-900 text-sm">{p.name}</p>
+                            <p className="text-[10px] text-gray-500 font-bold mt-1">
+                              {p.brand} {p.modelNumber ? `• ${p.modelNumber}` : ''}
+                              {p.price ? ` • Rs ${p.price.toLocaleString()}` : ''}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Message */}
                   <div className="space-y-4">
@@ -201,7 +239,7 @@ const AdminQuotations = () => {
                     <div className="bg-gray-50 p-6 rounded-2xl text-sm font-medium text-gray-600 leading-relaxed border border-gray-100 italic">
                       "{selectedInquiry.message}"
                     </div>
-                    {selectedInquiry.product && selectedInquiry.quantity && (
+                    {isQuotationRequest(selectedInquiry) && selectedInquiry.quantity && (
                       <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                         <span>Requested Quantity:</span>
                         <span className="text-gray-900">{selectedInquiry.quantity} Units</span>
@@ -211,6 +249,15 @@ const AdminQuotations = () => {
 
                   {/* Actions */}
                   <div className="space-y-3 pt-4 border-t border-gray-50">
+                    {isQuotationRequest(selectedInquiry) && (
+                    <button 
+                      onClick={() => setIsQuotationModalOpen(true)}
+                      className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary-dark shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                    >
+                      <HiOutlineDocumentText size={16} />
+                      Generate & Send Quotation
+                    </button>
+                    )}
                     <div className="grid grid-cols-2 gap-3">
                       <button 
                         onClick={() => updateStatus(selectedInquiry._id, 'contacted')}
@@ -255,6 +302,12 @@ const AdminQuotations = () => {
           </AnimatePresence>
         </div>
       </div>
+
+      <GenerateQuotationModal 
+        inquiry={selectedInquiry}
+        isOpen={isQuotationModalOpen}
+        onClose={() => setIsQuotationModalOpen(false)}
+      />
     </div>
   );
 };

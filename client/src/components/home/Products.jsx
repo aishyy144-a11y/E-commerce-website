@@ -6,6 +6,7 @@ import api from '../../utils/api';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { requiresQuotation } from '../../utils/productHelpers';
 
 import { ProductCardSkeleton } from '../common/Skeleton';
 
@@ -102,6 +103,8 @@ const Products = () => {
                     <img 
                       src={product.images[0] || 'https://via.placeholder.com/400'} 
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
                       crossOrigin="anonymous"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale-[20%] group-hover:grayscale-0"
                     />
@@ -112,7 +115,7 @@ const Products = () => {
                     <span className="px-2 py-1 md:px-3 md:py-1.5 bg-white/90 backdrop-blur-md text-blue-600 text-[8px] md:text-[10px] font-black uppercase tracking-widest rounded-md md:rounded-lg shadow-sm border border-blue-50">
                       {product.brand}
                     </span>
-                    {product.requiresQuote && (
+                    {requiresQuotation(product) && (
                       <span className="px-2 py-1 md:px-3 md:py-1.5 bg-amber-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest rounded-md md:rounded-lg shadow-sm">
                         Quote
                       </span>
@@ -183,7 +186,11 @@ const Products = () => {
                 {/* Bottom Section */}
                 <div className="pt-2 md:pt-4 border-t border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-2">
                   <div className="flex flex-col">
-                    <span className="text-xs sm:text-base md:text-2xl font-black text-slate-900 tracking-tighter">Rs {product.price.toLocaleString()}</span>
+                    {requiresQuotation(product) ? (
+                      <span className="text-[10px] md:text-xs font-black text-amber-600 uppercase tracking-widest">Price on Request</span>
+                    ) : (
+                      <span className="text-xs sm:text-base md:text-2xl font-black text-slate-900 tracking-tighter">Rs {product.price.toLocaleString()}</span>
+                    )}
                   </div>
                   
                   <Link 

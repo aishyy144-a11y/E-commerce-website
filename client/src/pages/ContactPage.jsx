@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker, HiOutlineChatAlt, HiOutlineChevronDown, HiOutlineCheckCircle, HiOutlineGlobe } from 'react-icons/hi';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import api from '../utils/api';
-import axios from 'axios';
+import ContactQuotationForm from '../components/products/ContactQuotationForm';
 
 const ContactCard = ({ icon: Icon, title, info, subInfo, color = "primary", href }) => {
   const CardContent = (
@@ -70,6 +70,7 @@ const FAQItem = ({ question, answer }) => {
 };
 
 const ContactPage = () => {
+  const [activeTab, setActiveTab] = useState('general');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -182,11 +183,32 @@ const ContactPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Form */}
             <div>
-              <div className="mb-12">
-                <h2 className="text-3xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Send an Inquiry</h2>
-                <p className="text-gray-500 font-medium">Fill out the form below for general inquiries or project support.</p>
+              <div className="mb-8">
+                <h2 className="text-3xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Get in Touch</h2>
+                <p className="text-gray-500 font-medium">Choose the form that best fits your needs.</p>
               </div>
 
+              <div className="flex gap-2 mb-8 p-1.5 bg-gray-50 rounded-2xl border border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('general'); setIsSubmitted(false); setError(''); }}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'general' ? 'bg-white text-primary shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  General Query
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('quotation'); setIsSubmitted(false); setError(''); }}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'quotation' ? 'bg-white text-primary shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  Request Quotation
+                </button>
+              </div>
+
+              {activeTab === 'quotation' ? (
+                <ContactQuotationForm />
+              ) : (
+                <>
               {error && (
                 <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold border border-red-100 flex items-center gap-3">
                   <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></div>
@@ -239,7 +261,7 @@ const ContactPage = () => {
                         required
                         type="text"
                         className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
-                        placeholder="e.g. Bulk Quotation Request"
+                        placeholder="e.g. Order Status, Technical Support, General Question"
                         value={formData.subject}
                         onChange={(e) => setFormData({...formData, subject: e.target.value})}
                       />
@@ -252,7 +274,7 @@ const ContactPage = () => {
                       required
                       rows="6"
                       className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-gray-700"
-                      placeholder="Describe your project requirements..."
+                      placeholder="How can we help you today? Share your question or concern..."
                       value={formData.message}
                       onChange={(e) => setFormData({...formData, message: e.target.value})}
                     ></textarea>
@@ -287,6 +309,8 @@ const ContactPage = () => {
                     Send another message
                   </button>
                 </motion.div>
+              )}
+                </>
               )}
             </div>
 

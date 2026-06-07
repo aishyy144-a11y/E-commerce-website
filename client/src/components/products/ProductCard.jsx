@@ -1,8 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import api from '../../utils/api';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { requiresQuotation } from '../../utils/productHelpers';
 import { 
   HiOutlineShoppingBag, 
   HiOutlineMail, 
@@ -16,8 +18,18 @@ import {
 const ProductCard = ({ product, index, category, addToCart, onRequestQuote }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
+
+  const prefetchProduct = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['product', product.slug],
+      queryFn: () => api.get(`/api/products/${product.slug}`).then((r) => r.data),
+      staleTime: 1000 * 60 * 2,
+    });
+  };
   const { user } = useAuth();
   const { clearCart, toggleWishlist, isInWishlist } = useCart();
+  const isQuoteProduct = requiresQuotation(product);
 
   const handleBuyNow = (e) => {
     e.preventDefault();
@@ -26,19 +38,30 @@ const ProductCard = ({ product, index, category, addToCart, onRequestQuote }) =>
     navigate('/cart');
   };
 
+  const handleQuoteClick = (e) => {
+    e.preventDefault();
+    if (onRequestQuote) {
+      onRequestQuote(product);
+    } else {
+      navigate(`/product/${product.slug}`, { state: { from: location.pathname } });
+    }
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-[24px] md:rounded-[32px] p-2 md:p-3 shadow-sm hover:shadow-2xl transition-all group border border-gray-100 flex flex-col relative"
-    >
+    <div className="bg-white rounded-[24px] md:rounded-[32px] p-2 md:p-3 shadow-sm hover:shadow-2xl transition-all group border border-gray-100 flex flex-col relative">
       {/* Product Image Section */}
-      <Link to={`/product/${product.slug}`} state={{ from: location.pathname }} className="block">
+      <Link
+        to={`/product/${product.slug}`}
+        state={{ from: location.pathname }}
+        className="block"
+        onMouseEnter={prefetchProduct}
+      >
         <div className="relative aspect-[4/3] md:aspect-[3/2] rounded-[18px] md:rounded-[24px] overflow-hidden mb-2 bg-gray-50">
           <img 
             src={product.images[0] || 'https://via.placeholder.com/400x300'} 
             alt={product.name}
+            loading="lazy"
+            decoding="async"
             crossOrigin="anonymous"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
@@ -109,14 +132,18 @@ const ProductCard = ({ product, index, category, addToCart, onRequestQuote }) =>
       {/* Pricing & Actions */}
       <div className="pt-2 border-t border-gray-50 px-1 md:px-0">
         <div className="flex items-baseline justify-between mb-1.5 md:mb-2">
-          <div className="flex flex-col md:flex-row md:items-baseline gap-0 md:gap-1">
-            <span className="text-sm md:text-lg font-black text-gray-900 tracking-tighter leading-none">Rs {product.price.toLocaleString()}</span>
-            <span className="text-[6px] md:text-[8px] text-gray-400 font-bold uppercase tracking-tighter">Excl. VAT</span>
-          </div>
+          {isQuoteProduct ? (
+            <span className="text-[10px] md:text-xs font-black text-amber-600 uppercase tracking-widest">Price on Request</span>
+          ) : (
+            <div className="flex flex-col md:flex-row md:items-baseline gap-0 md:gap-1">
+              <span className="text-sm md:text-lg font-black text-gray-900 tracking-tighter leading-none">Rs {product.price.toLocaleString()}</span>
+              <span className="text-[6px] md:text-[8px] text-gray-400 font-bold uppercase tracking-tighter">Excl. VAT</span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
-          {!product.requiresQuote ? (
+          {!isQuoteProduct ? (
             <>
               <button 
                 onClick={() => addToCart(product)}
@@ -135,7 +162,7 @@ const ProductCard = ({ product, index, category, addToCart, onRequestQuote }) =>
             </>
           ) : (
             <button 
-              onClick={() => navigate(`/product/${product.slug}`)}
+              onClick={handleQuoteClick}
               className="col-span-full py-1.5 md:py-2.5 bg-amber-600 text-white text-[8px] md:text-[10px] font-black rounded-lg md:rounded-xl hover:bg-amber-700 transition-all shadow-lg shadow-amber-600/20 uppercase tracking-widest"
             >
               Request Quote
@@ -143,7 +170,7 @@ const ProductCard = ({ product, index, category, addToCart, onRequestQuote }) =>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

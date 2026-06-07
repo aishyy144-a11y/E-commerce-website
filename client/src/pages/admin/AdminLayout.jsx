@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../utils/api';
 import { 
   HiOutlineViewGrid, 
   HiOutlineCube, 
@@ -20,11 +22,36 @@ import {
   HiOutlineX
 } from 'react-icons/hi';
 
+const SiteLogo = ({ size = 'md' }) => (
+  <div className={`${size === 'sm' ? 'w-10 h-10' : 'w-10 h-10'} bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0`}>
+    <HiOutlineLightBulb className="text-white text-xl" />
+  </div>
+);
+
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const queryClient = useQueryClient();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = () => api.get('/api/categories').then((r) => r.data);
+    queryClient.prefetchQuery({ queryKey: ['categories'], queryFn: fetchCategories });
+    queryClient.prefetchQuery({ queryKey: ['admin-categories'], queryFn: fetchCategories });
+    queryClient.prefetchQuery({
+      queryKey: ['admin-products'],
+      queryFn: () => api.get('/api/products/all?fields=card').then((r) => r.data),
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['admin-orders'],
+      queryFn: () => api.get('/api/orders').then((r) => r.data),
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['admin-inquiries'],
+      queryFn: () => api.get('/api/inquiries').then((r) => r.data),
+    });
+  }, [queryClient]);
 
   const handleLogout = () => {
     navigate('/', { replace: true });
@@ -166,7 +193,7 @@ const AdminLayout = () => {
                 <p className="text-sm font-black text-gray-900 leading-none">System Admin</p>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Full Access</p>
               </div>
-              <div className="w-10 h-10 bg-gray-100 rounded-full border border-gray-200"></div>
+              <SiteLogo />
             </div>
           </div>
         </header>

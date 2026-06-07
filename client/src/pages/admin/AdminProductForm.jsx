@@ -42,16 +42,14 @@ const AdminProductForm = () => {
   const { isLoading: isProductLoading } = useQuery({
     queryKey: ['admin-product', id],
     queryFn: async () => {
-      const response = await api.get('/api/products/all');
-      const product = response.data.find(p => p._id === id);
-      if (product) {
-        setFormData({
-          ...product,
-          category: product.category._id,
-          images: product.images.length > 0 ? product.images : [''],
-          specifications: product.specifications || {}
-        });
-      }
+      const response = await api.get(`/api/products/admin/${id}`);
+      const product = response.data;
+      setFormData({
+        ...product,
+        category: product.category._id || product.category,
+        images: product.images?.length > 0 ? product.images : [''],
+        specifications: product.specifications || {}
+      });
       return product;
     },
     enabled: isEdit
@@ -66,9 +64,11 @@ const AdminProductForm = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['admin-products']);
-      queryClient.invalidateQueries(['latest-products']);
-      queryClient.invalidateQueries(['shop-data']);
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['latest-products'] });
+      queryClient.invalidateQueries({ queryKey: ['shop-data'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
+      queryClient.invalidateQueries({ queryKey: ['category-products'] });
       navigate('/admin/products');
     },
     onError: (err) => {

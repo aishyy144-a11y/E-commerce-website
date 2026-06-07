@@ -87,6 +87,9 @@ const orderSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ status: 1 });
+
 // Pre-save hook to generate professional order number (IS001, IS002...)
 orderSchema.pre('save', async function() {
   if (this.isNew) {
@@ -105,5 +108,8 @@ orderSchema.pre('save', async function() {
     this.orderNumber = `IS${nextNumber.toString().padStart(3, '0')}`;
   }
 });
+
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);

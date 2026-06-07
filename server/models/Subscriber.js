@@ -19,4 +19,6 @@ const subscriberSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+subscriberSchema.index({ status: 1 });
+
 module.exports = mongoose.model('Subscriber', subscriberSchema);

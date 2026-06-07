@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../../utils/api';
-import axios from 'axios';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   HiOutlineShoppingBag, 
@@ -21,8 +21,7 @@ import { FaWhatsapp } from 'react-icons/fa6';
 import { toast } from 'react-toastify';
 
 const AdminOrders = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [trackingId, setTrackingId] = useState('');
 
@@ -31,7 +30,10 @@ const AdminOrders = () => {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState(null);
   const [users, setUsers] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [productsByCategory, setProductsByCategory] = useState({});
+  const [productLookup, setProductLookup] = useState({});
+  const [loadingCategoryProducts, setLoadingCategoryProducts] = useState({});
   const [emailSending, setEmailSending] = useState(false);
 
   // Manual order form state
@@ -51,28 +53,53 @@ const AdminOrders = () => {
 
   const [paymentMethod, setPaymentMethod] = useState('Bank Deposit');
   const [selectedItems, setSelectedItems] = useState([
-    { productId: '', quantity: 1, customPrice: '' }
+    { categoryId: '', productId: '', quantity: 1, customPrice: '' }
   ]);
 
   const [shippingPrice, setShippingPrice] = useState(250);
   const [taxPrice, setTaxPrice] = useState(0);
   const [manualShippingOverridden, setManualShippingOverridden] = useState(false);
+  const [submittingOrder, setSubmittingOrder] = useState(false);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ['admin-orders'],
+    queryFn: async () => {
+      const response = await api.get('/api/orders');
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
 
-  const fetchUsersAndProducts = async () => {
+  const fetchUsersAndCategories = async () => {
     try {
-      const [usersRes, productsRes] = await Promise.all([
+      const [usersRes, categoriesRes] = await Promise.all([
         api.get('/api/users'),
-        api.get('/api/products/all')
+        api.get('/api/categories')
       ]);
       setUsers(usersRes.data);
-      setProducts(productsRes.data);
+      setCategories(categoriesRes.data);
     } catch (err) {
-      console.error('Error fetching users/products:', err);
-      toast.error('Failed to load customers or products list');
+      console.error('Error fetching users/categories:', err);
+      toast.error('Failed to load customers or categories');
+    }
+  };
+
+  const fetchCategoryProducts = async (categoryId) => {
+    if (!categoryId || productsByCategory[categoryId]) return;
+    setLoadingCategoryProducts(prev => ({ ...prev, [categoryId]: true }));
+    try {
+      const res = await api.get(`/api/products/category-id/${categoryId}`);
+      setProductsByCategory(prev => ({ ...prev, [categoryId]: res.data }));
+      setProductLookup(prev => {
+        const updated = { ...prev };
+        res.data.forEach(p => { updated[p._id] = p; });
+        return updated;
+      });
+    } catch (err) {
+      console.error('Error fetching category products:', err);
+      toast.error('Failed to load products for this category');
+    } finally {
+      setLoadingCategoryProducts(prev => ({ ...prev, [categoryId]: false }));
     }
   };
 
@@ -91,7 +118,7 @@ const AdminOrders = () => {
 
   const calculateSubtotal = () => {
     return selectedItems.reduce((sum, item) => {
-      const prod = products.find(p => p._id === item.productId);
+      const prod = productLookup[item.productId];
       const price = item.customPrice !== '' ? parseFloat(item.customPrice) : (prod ? prod.price : 0);
       return sum + (price * item.quantity);
     }, 0);
@@ -101,7 +128,7 @@ const AdminOrders = () => {
 
   // Auto calculate shipping
   useEffect(() => {
-    if (!manualShippingOverridden && products.length > 0) {
+    if (!manualShippingOverridden) {
       const calcSub = calculateSubtotal();
       if (calcSub === 0) {
         setShippingPrice(0);
@@ -109,7 +136,7 @@ const AdminOrders = () => {
         setShippingPrice(calcSub > 5000 ? 0 : 250);
       }
     }
-  }, [selectedItems, products, manualShippingOverridden]);
+  }, [selectedItems, productLookup, manualShippingOverridden]);
 
   const handleCreateManualOrder = async (e) => {
     e.preventDefault();
@@ -149,7 +176,7 @@ const AdminOrders = () => {
     }
 
     const orderItems = validItems.map(item => {
-      const prod = products.find(p => p._id === item.productId);
+      const prod = productLookup[item.productId];
       const price = item.customPrice !== '' ? parseFloat(item.customPrice) : prod.price;
       return {
         product: prod._id,
@@ -187,7 +214,7 @@ const AdminOrders = () => {
     };
 
     try {
-      setLoading(true);
+      setSubmittingOrder(true);
       const response = await api.post('/api/orders/manual', orderData);
       toast.success('Manual order created successfully!');
       
@@ -202,7 +229,7 @@ const AdminOrders = () => {
         country: 'Pakistan',
         phone: ''
       });
-      setSelectedItems([{ productId: '', quantity: 1, customPrice: '' }]);
+      setSelectedItems([{ categoryId: '', productId: '', quantity: 1, customPrice: '' }]);
       setShippingPrice(250);
       setTaxPrice(0);
       setManualShippingOverridden(false);
@@ -211,12 +238,12 @@ const AdminOrders = () => {
       setReceiptOrder(response.data);
       setShowReceiptModal(true);
 
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (err) {
       console.error('Error creating manual order:', err);
       toast.error(err.response?.data?.message || 'Failed to create manual order');
     } finally {
-      setLoading(false);
+      setSubmittingOrder(false);
     }
   };
 
@@ -254,23 +281,6 @@ const AdminOrders = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  const fetchOrders = async () => {
-      try {
-        const response = await api.get('/api/orders');
-      setOrders(response.data);
-      // Update selected order reference if it exists
-      if (selectedOrder) {
-        const updated = response.data.find(o => o._id === selectedOrder._id);
-        if (updated) setSelectedOrder(updated);
-      }
-    } catch (err) {
-      console.error('Error fetching orders:', err);
-      toast.error('Failed to load orders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const updateStatus = async (id, status) => {
     try {
       const data = { status };
@@ -281,7 +291,7 @@ const AdminOrders = () => {
       await api.put(`/api/orders/${id}/status`, data);
       toast.success(`Order ${status} Successfully`);
       setTrackingId('');
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (err) {
       toast.error('Update failed');
     }
@@ -293,7 +303,7 @@ const AdminOrders = () => {
       await api.delete(`/api/orders/${id}`);
       toast.success('Order deleted');
       setSelectedOrder(null);
-      fetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     } catch (err) {
       toast.error('Delete failed');
     }
@@ -311,12 +321,6 @@ const AdminOrders = () => {
     }
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    </div>
-  );
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -327,7 +331,7 @@ const AdminOrders = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
-              fetchUsersAndProducts();
+              fetchUsersAndCategories();
               setShowManualModal(true);
             }}
             className="px-6 py-3 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all transform hover:-translate-y-0.5 text-xs uppercase"
@@ -344,7 +348,11 @@ const AdminOrders = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Order List */}
         <div className="lg:col-span-2 space-y-4">
-          {orders.length === 0 ? (
+          {ordersLoading ? (
+            <div className="flex items-center justify-center h-64 bg-white rounded-[32px] border border-gray-100">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : orders.length === 0 ? (
             <div className="bg-white rounded-[32px] p-12 text-center border-2 border-dashed border-gray-100">
               <HiOutlineShoppingBag size={48} className="text-gray-200 mx-auto mb-4" />
               <p className="text-gray-400 font-bold">No orders found</p>
@@ -772,7 +780,7 @@ const AdminOrders = () => {
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Order Items</h3>
                     <button
                       type="button"
-                      onClick={() => setSelectedItems([...selectedItems, { productId: '', quantity: 1, customPrice: '' }])}
+                      onClick={() => setSelectedItems([...selectedItems, { categoryId: '', productId: '', quantity: 1, customPrice: '' }])}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary font-black rounded-lg text-[10px] uppercase hover:bg-primary/20 transition-all"
                     >
                       <HiOutlinePlus size={12} /> Add Product
@@ -781,9 +789,32 @@ const AdminOrders = () => {
 
                   <div className="space-y-3">
                     {selectedItems.map((item, idx) => {
-                      const selectedProd = products.find(p => p._id === item.productId);
+                      const selectedProd = productLookup[item.productId];
+                      const categoryProducts = item.categoryId ? (productsByCategory[item.categoryId] || []) : [];
                       return (
                         <div key={idx} className="flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-gray-200">
+                          <div className="flex-1 min-w-[160px] space-y-1">
+                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Category</label>
+                            <select
+                              value={item.categoryId}
+                              onChange={(e) => {
+                                const newItems = [...selectedItems];
+                                newItems[idx].categoryId = e.target.value;
+                                newItems[idx].productId = '';
+                                newItems[idx].customPrice = '';
+                                setSelectedItems(newItems);
+                                if (e.target.value) fetchCategoryProducts(e.target.value);
+                              }}
+                              required
+                              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-xs"
+                            >
+                              <option value="">-- Choose Category --</option>
+                              {categories.map(c => (
+                                <option key={c._id} value={c._id}>{c.name}</option>
+                              ))}
+                            </select>
+                          </div>
+
                           <div className="flex-1 min-w-[200px] space-y-1">
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Product</label>
                             <select
@@ -791,15 +822,18 @@ const AdminOrders = () => {
                               onChange={(e) => {
                                 const newItems = [...selectedItems];
                                 newItems[idx].productId = e.target.value;
-                                const prod = products.find(p => p._id === e.target.value);
+                                const prod = productLookup[e.target.value];
                                 newItems[idx].customPrice = prod ? prod.price : '';
                                 setSelectedItems(newItems);
                               }}
                               required
-                              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-xs"
+                              disabled={!item.categoryId || loadingCategoryProducts[item.categoryId]}
+                              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-xs disabled:opacity-50"
                             >
-                              <option value="">-- Choose Product --</option>
-                              {products.map(p => (
+                              <option value="">
+                                {!item.categoryId ? '-- Select Category First --' : loadingCategoryProducts[item.categoryId] ? 'Loading products...' : '-- Choose Product --'}
+                              </option>
+                              {categoryProducts.map(p => (
                                 <option key={p._id} value={p._id} disabled={p.stock <= 0}>
                                   {p.name} (Rs {p.price.toLocaleString()}) {p.stock <= 0 ? '[OUT OF STOCK]' : `[Stock: ${p.stock}]`}
                                 </option>
@@ -871,10 +905,10 @@ const AdminOrders = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={submittingOrder}
                   className="px-6 py-3 bg-primary text-white font-black rounded-xl text-xs uppercase hover:bg-primary-dark shadow-md transition-all flex items-center gap-2"
                 >
-                  {loading && <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                  {submittingOrder && <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
                   Create Order
                 </button>
               </div>

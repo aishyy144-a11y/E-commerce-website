@@ -6,6 +6,10 @@ const inquirySchema = new mongoose.Schema({
     ref: 'Product',
     required: false
   },
+  products: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -45,5 +49,10 @@ const inquirySchema = new mongoose.Schema({
     type: String
   }
 }, { timestamps: true });
+
+inquirySchema.index({ status: 1 });
+inquirySchema.index({ createdAt: -1 });
+inquirySchema.index({ product: 1 });
+inquirySchema.index({ products: 1 });
 
 module.exports = mongoose.model('Inquiry', inquirySchema);

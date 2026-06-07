@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { requiresQuotation } from '../utils/productHelpers';
 
 const CartContext = createContext();
 
@@ -51,6 +52,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = (product, quantity = 1, silent = false) => {
+    if (requiresQuotation(product)) return;
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item._id === product._id);
       if (existingItem) {

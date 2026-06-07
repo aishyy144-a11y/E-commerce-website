@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
-import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import DroneProductSpecs from '../components/home/DroneProductSpecs';
 import LMRProductSpecs from '../components/home/LMRProductSpecs';
@@ -32,6 +32,7 @@ import 'swiper/css/free-mode';
 
 import ProductCard from '../components/products/ProductCard';
 import { ProductCardSkeleton } from '../components/common/Skeleton';
+import { requiresQuotation } from '../utils/productHelpers';
 
 const ProductDetailsSkeleton = () => (
   <div className="bg-white min-h-screen pt-24 md:pt-32">
@@ -59,13 +60,10 @@ const ProductDetailsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { addToCart, cart } = useCart();
-  const [product, setProduct] = useState(null);
 
   const cartItemCount = cart.reduce((count, item) => count + item.quantity, 0);
 
   const fromShop = location.state?.from === '/shop';
-  const [relatedProducts, setRelatedProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -77,26 +75,26 @@ const ProductDetailsPage = () => {
     setTimeout(() => setIsAdding(false), 1500);
   };
 
-  useEffect(() => {
-    const fetchProductData = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get(`/api/products/${slug}`);
-        setProduct(response.data);
-        
-        // Fetch related products (same category)
-        const relatedRes = await api.get(`/api/products/category/${response.data.category.slug}`);
-        setRelatedProducts(relatedRes.data.filter(p => p._id !== response.data._id));
-      } catch (err) {
-        console.error('Error fetching product details:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProductData();
-  }, [slug]);
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', slug],
+    queryFn: async () => {
+      const response = await api.get(`/api/products/${slug}`);
+      return response.data;
+    },
+  });
 
-  if (loading) return <ProductDetailsSkeleton />;
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: ['product-related', slug],
+    queryFn: async () => {
+      const response = await api.get(`/api/products/${slug}/related?limit=4`);
+      return response.data;
+    },
+    enabled: !!slug,
+  });
+
+  if (isLoading) return <ProductDetailsSkeleton />;
+
+  const isQuoteProduct = product ? requiresQuotation(product) : false;
 
   if (!product) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white">
@@ -181,6 +179,7 @@ const ProductDetailsPage = () => {
                     <img 
                       src={img} 
                       alt={product.name} 
+                      loading="lazy"
                       crossOrigin="anonymous"
                       className="w-full h-full object-cover" 
                     />
@@ -206,6 +205,7 @@ const ProductDetailsPage = () => {
                       <img 
                         src={img} 
                         alt={product.name} 
+                        loading="lazy"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" 
                       />
@@ -241,10 +241,18 @@ const ProductDetailsPage = () => {
                 <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Category: <span className="text-gray-900">{product.category.name}</span></p>
               </div>
 
-              <div className="text-2xl md:text-4xl font-black text-primary mb-6 md:mb-10">
-                Rs {product.price.toLocaleString()}
-                <span className="text-[10px] md:text-xs text-gray-400 font-bold ml-2 uppercase tracking-tighter">Excl. VAT & Shipping</span>
-              </div>
+              {isQuoteProduct ? (
+                <div className="mb-6 md:mb-10">
+                  <span className="inline-block px-4 py-2 bg-amber-50 text-amber-700 border border-amber-100 rounded-xl text-sm font-black uppercase tracking-widest">
+                    Price on Request — Submit Quotation Request
+                  </span>
+                </div>
+              ) : (
+                <div className="text-2xl md:text-4xl font-black text-primary mb-6 md:mb-10">
+                  Rs {product.price.toLocaleString()}
+                  <span className="text-[10px] md:text-xs text-gray-400 font-bold ml-2 uppercase tracking-tighter">Excl. VAT & Shipping</span>
+                </div>
+              )}
 
               <div className="space-y-8 mb-12">
                 {/* Specialized Drone Specs (Full) */}
@@ -314,46 +322,59 @@ const ProductDetailsPage = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200">
+              {isQuoteProduct ? (
+                <div className="mb-8">
                   <button 
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-12 flex items-center justify-center font-black text-gray-500 hover:text-primary transition-colors"
+                    onClick={() => setShowQuoteModal(true)}
+                    className="w-full sm:w-auto px-8 py-4 bg-amber-600 text-white font-black rounded-2xl shadow-xl shadow-amber-600/20 hover:bg-amber-700 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
                   >
-                    -
+                    <HiOutlineMail size={22} />
+                    Request Quotation
                   </button>
-                  <input 
-                    type="number" 
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="w-12 bg-transparent text-center font-black text-gray-900 focus:outline-none"
-                  />
+                  <p className="mt-3 text-xs text-gray-500 font-medium">Our team will review your request and send a custom quote. After approval, we will place your order and send a receipt.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200">
+                    <button 
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-12 h-12 flex items-center justify-center font-black text-gray-500 hover:text-primary transition-colors"
+                    >
+                      -
+                    </button>
+                    <input 
+                      type="number" 
+                      value={quantity}
+                      onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                      className="w-12 bg-transparent text-center font-black text-gray-900 focus:outline-none"
+                    />
+                    <button 
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-12 h-12 flex items-center justify-center font-black text-gray-500 hover:text-primary transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                  
                   <button 
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-12 h-12 flex items-center justify-center font-black text-gray-500 hover:text-primary transition-colors"
+                    onClick={handleAddToCart}
+                    disabled={isAdding}
+                    className="flex-grow py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    +
+                    {isAdding ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <HiOutlineShoppingBag size={24} />
+                        Add to Cart
+                      </>
+                    )}
                   </button>
                 </div>
-                
-                <button 
-                  onClick={handleAddToCart}
-                  disabled={isAdding}
-                  className="flex-grow py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                >
-                  {isAdding ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Adding...
-                    </>
-                  ) : (
-                    <>
-                      <HiOutlineShoppingBag size={24} />
-                      Add to Cart
-                    </>
-                  )}
-                </button>
-              </div>
+              )}
             </motion.div>
           </div>
         </div>
@@ -400,7 +421,7 @@ const ProductDetailsPage = () => {
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
-                {relatedProducts.slice(0, 4).map((item, index) => (
+                {relatedProducts.map((item, index) => (
                   <ProductCard 
                     key={item._id} 
                     product={item} 
@@ -417,7 +438,7 @@ const ProductDetailsPage = () => {
       </main>
 
       {/* Sticky Mobile Add to Cart Bar */}
-      {!product.requiresQuote && (
+      {!isQuoteProduct && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 pb-6 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-4">
             <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100">
@@ -447,17 +468,23 @@ const ProductDetailsPage = () => {
       )}
 
       {/* Floating Inquiry Button for Quote Products */}
-      {product.requiresQuote && (
+      {isQuoteProduct && (
         <div className="md:hidden fixed bottom-6 right-6 z-[100]">
           <button 
             onClick={() => setShowQuoteModal(true)}
-            className="flex items-center gap-2 px-6 py-4 bg-amber-600 text-white font-black rounded-full shadow-2xl shadow-amber-600/30 animate-bounce"
+            className="flex items-center gap-2 px-6 py-4 bg-amber-600 text-white font-black rounded-full shadow-2xl shadow-amber-600/30"
           >
             <HiOutlineMail size={20} />
             Request Quote
           </button>
         </div>
       )}
+
+      <QuotationForm 
+        product={product}
+        isOpen={showQuoteModal}
+        onClose={() => setShowQuoteModal(false)}
+      />
     </div>
   );
 };

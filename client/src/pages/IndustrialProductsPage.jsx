@@ -51,7 +51,7 @@ const IndustrialProductsPage = () => {
     queryKey: ['shop-data'],
     queryFn: async () => {
       const [prodRes, catRes] = await Promise.all([
-        api.get('/api/products/all'),
+        api.get('/api/products/all?fields=shop'),
         api.get('/api/categories')
       ]);
       return { products: prodRes.data, categories: catRes.data };

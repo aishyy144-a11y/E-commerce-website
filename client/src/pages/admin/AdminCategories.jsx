@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import api from '../../utils/api';
-import axios from 'axios';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   HiOutlinePlus, 
@@ -14,8 +14,7 @@ import { toast } from 'react-toastify';
 import ImageUploadWithCrop from '../../components/admin/ImageUploadWithCrop';
 
 const AdminCategories = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({
@@ -25,21 +24,14 @@ const AdminCategories = () => {
     image: ''
   });
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
+  const { data: categories = [], isLoading: loading } = useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: async () => {
       const response = await api.get('/api/categories');
-      setCategories(response.data);
-    } catch (err) {
-      toast.error('Failed to load categories');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
 
   const handleEdit = (category) => {
     setEditingCategory(category);
@@ -57,7 +49,7 @@ const AdminCategories = () => {
     try {
       await api.delete(`/api/categories/${id}`);
       toast.success('Category deleted');
-      fetchCategories();
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
     } catch (err) {
       toast.error('Failed to delete category');
     }
@@ -76,7 +68,7 @@ const AdminCategories = () => {
       setShowModal(false);
       setEditingCategory(null);
       setFormData({ name: '', slug: '', description: '', image: '' });
-      fetchCategories();
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Operation failed');
     }

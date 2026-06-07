@@ -18,7 +18,7 @@ const AdminProducts = () => {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['admin-products'],
     queryFn: async () => {
-      const response = await api.get('/api/products/all');
+      const response = await api.get('/api/products/all?fields=card');
       return response.data;
     }
   });

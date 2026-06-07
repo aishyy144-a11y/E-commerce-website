@@ -9,24 +9,8 @@ const Hero = () => {
     <section className="relative min-h-0 lg:min-h-[70vh] flex items-center pt-0 overflow-hidden bg-white">
       {/* Background Gradients & Illustrations */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] bg-blue-50/50 rounded-full blur-[120px]"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            x: [0, -30, 0],
-            y: [0, -50, 0],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-100/30 rounded-full blur-[100px]"
-        />
+        <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] bg-blue-50/50 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-100/30 rounded-full blur-[100px]" />
         
         {/* Animated Tech Grid Overlay */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#1E40AF 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
@@ -49,15 +33,7 @@ const Hero = () => {
               
               <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-black text-slate-900 leading-[1.1] md:leading-[1] mb-4 md:mb-8 tracking-tighter">
                 Advanced <span className="text-blue-600">Equipment</span> & <br className="hidden md:block" />
-                <span className="relative inline-block">
-                  Reliable Support
-                  <motion.span 
-                    initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
-                    transition={{ delay: 0.8, duration: 1 }}
-                    className="absolute bottom-1 md:bottom-2 left-0 h-2 md:h-3 bg-blue-100 -z-10"
-                  ></motion.span>
-                </span>
+                Reliable Support
               </h1>
               
               <p className="text-sm sm:text-base md:text-xl text-slate-500 mb-6 md:mb-12 leading-relaxed font-medium px-2 md:px-0">
@@ -129,11 +105,7 @@ const Hero = () => {
               {/* Glass Card Container */}
               <div className="relative p-2.5 md:p-8 bg-white/40 backdrop-blur-3xl rounded-[28px] md:rounded-[60px] border border-white/50 shadow-[0_32px_120px_-15px_rgba(0,0,0,0.08)] w-full max-w-[320px] sm:max-w-[400px] md:max-w-[400px] lg:max-w-none mx-auto">
                 <div className="relative rounded-[20px] md:rounded-[40px] overflow-hidden aspect-square bg-slate-100 shadow-inner group">
-                  <motion.img 
-                    animate={{ 
-                      y: [0, -10, 0],
-                    }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  <img 
                     src={generalImg} 
                     alt="Industrial Technology" 
                     className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
@@ -142,11 +114,7 @@ const Hero = () => {
                 </div>
 
                 {/* Floating Elements - Hidden on mobile, visible on tablet/desktop */}
-                <motion.div 
-                  animate={{ y: [0, 20, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-6 md:-top-10 -right-4 md:-right-10 p-3 md:p-6 bg-white rounded-2xl md:rounded-[32px] shadow-2xl border border-slate-50 hidden md:flex items-center gap-2 md:gap-4"
-                >
+                <div className="absolute -top-6 md:-top-10 -right-4 md:-right-10 p-3 md:p-6 bg-white rounded-2xl md:rounded-[32px] shadow-2xl border border-slate-50 hidden md:flex items-center gap-2 md:gap-4">
                   <div className="w-10 h-10 md:w-14 md:h-14 bg-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-600/30">
                     <HiOutlineCube size={24} className="md:size-[28px]" />
                   </div>
@@ -154,13 +122,9 @@ const Hero = () => {
                     <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">In Stock</p>
                     <p className="text-sm md:text-lg font-black text-slate-900 leading-none">Elite Series</p>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div 
-                  animate={{ y: [0, -20, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-10 p-3 md:p-5 bg-slate-900 text-white rounded-2xl md:rounded-[32px] shadow-2xl hidden md:flex items-center gap-2 md:gap-4"
-                >
+                <div className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-10 p-3 md:p-5 bg-slate-900 text-white rounded-2xl md:rounded-[32px] shadow-2xl hidden md:flex items-center gap-2 md:gap-4">
                   <div className="w-8 h-8 md:w-12 md:h-12 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center backdrop-blur-md">
                     <div className="w-2 h-2 md:w-3 md:h-3 bg-emerald-500 rounded-full animate-pulse"></div>
                   </div>
@@ -168,7 +132,7 @@ const Hero = () => {
                     <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Support</p>
                     <p className="text-xs md:text-sm font-bold">24/7 Ops</p>
                   </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* Background Shapes */}

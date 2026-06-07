@@ -7,9 +7,10 @@ import App from './App.jsx'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
-      cacheTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
-      refetchOnWindowFocus: false, // Don't refetch when user switches tabs
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+      refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 })
